@@ -2,6 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import { Cpu, MemoryStick, MonitorDot, HardDrive, RefreshCw } from 'lucide-react';
 
+// View components
+import DashboardOverview from './views/DashboardOverview';
+import AgentConsoleView from './views/AgentConsoleView';
+import ContextEngineView from './views/ContextEngineView';
+import ExecutionMonitorView from './views/ExecutionMonitorView';
+import KnowledgeBaseView from './views/KnowledgeBaseView';
+import ModelsView from './views/ModelsView';
+import SettingsView from './views/SettingsView';
+
 interface SystemInfo {
   ram: { used: number; total: number; percent: number };
   vram: { used: number; total: number; percent: number; gpuName: string };
@@ -109,25 +118,25 @@ export default function DashboardWindow() {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-6">Dashboard</h1><p className="text-muted-foreground">Global overview and active automations.</p></div>;
+        return <DashboardOverview />;
       case 'agent':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 mb-6">Agent Console</h1><p className="text-muted-foreground">Interact with the agent directly here.</p></div>;
+        return <AgentConsoleView />;
       case 'context':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 mb-6">Context Engine</h1><p className="text-muted-foreground">Manage Canva, Figma, and Notion context packs.</p></div>;
+        return <ContextEngineView />;
       case 'workflows':
         return <div className="p-8 text-white"><h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500 mb-6">Workflows</h1><p className="text-muted-foreground">Node-based visual workflow builder.</p></div>;
       case 'knowledge':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Knowledge Base</h1></div>;
+        return <KnowledgeBaseView />;
       case 'monitor':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Execution Monitor</h1></div>;
+        return <ExecutionMonitorView />;
       case 'models':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Models</h1></div>;
+        return <ModelsView />;
       case 'marketplace':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Marketplace</h1></div>;
+        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Marketplace</h1><p className="text-zinc-500">Coming soon — share and discover Context Packs, Workflows, and Automation Templates.</p></div>;
       case 'storage':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Storage</h1></div>;
+        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Storage</h1><p className="text-zinc-500">SQLite database browser and ChromaDB collection manager.</p></div>;
       case 'settings':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Settings</h1></div>;
+        return <SettingsView />;
       default:
         return <div className="p-8">Select a view</div>;
     }

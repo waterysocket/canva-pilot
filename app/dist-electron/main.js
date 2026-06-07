@@ -3,8 +3,13 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { AgentOrchestrator } from './src/main/agent/AgentOrchestrator.js';
+import { KeyManager } from './src/main/security/KeyManager.js';
+import { ProviderManager } from './src/main/providers/ProviderManager.js';
+import { ExecutionMonitor } from './src/main/events/ExecutionMonitor.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+let agentOrchestrator;
 let commandBarWindow = null;
 let dashboardWindow = null;
 let dropdownWindow = null;
@@ -101,6 +106,7 @@ function createDashboard() {
     });
 }
 app.whenReady().then(() => {
+    agentOrchestrator = new AgentOrchestrator();
     createCommandBar();
     createDropdownWindow();
     ipcMain.on('resize-window', (event, expanded) => {
@@ -249,6 +255,40 @@ app.whenReady().then(() => {
                 percent: diskTotalGB > 0 ? Math.round((diskUsedGB / diskTotalGB) * 100) : 0,
             },
         };
+    });
+    // Backend Integration Handlers
+    ipcMain.handle('start-task', async (event, goal, provider) => {
+        return await agentOrchestrator.startTask(goal, provider);
+    });
+    ipcMain.handle('save-api-key', async (event, provider, key) => {
+        await KeyManager.setApiKey(provider, key);
+        return true;
+    });
+    ipcMain.handle('get-api-key', async (event, provider) => {
+        return await KeyManager.getApiKey(provider);
+    });
+    ipcMain.handle('get-models', async (event, provider) => {
+        const providerManager = ProviderManager.getInstance();
+        const p = providerManager.getReasoningProvider(provider);
+        return await p.getModels();
+    });
+    // Bind ExecutionMonitor events to Window
+    const monitor = ExecutionMonitor.getInstance();
+    monitor.on('taskStarted', (task) => {
+        dashboardWindow?.webContents.send('task-event', { type: 'started', task });
+        commandBarWindow?.webContents.send('task-event', { type: 'started', task });
+    });
+    monitor.on('taskUpdated', ({ task, currentStep }) => {
+        dashboardWindow?.webContents.send('task-event', { type: 'updated', task, currentStep });
+        commandBarWindow?.webContents.send('task-event', { type: 'updated', task, currentStep });
+    });
+    monitor.on('taskCompleted', (task) => {
+        dashboardWindow?.webContents.send('task-event', { type: 'completed', task });
+        commandBarWindow?.webContents.send('task-event', { type: 'completed', task });
+    });
+    monitor.on('taskFailed', ({ task, error }) => {
+        dashboardWindow?.webContents.send('task-event', { type: 'failed', task, error });
+        commandBarWindow?.webContents.send('task-event', { type: 'failed', task, error });
     });
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0)

@@ -17,4 +17,10 @@ electron_1.contextBridge.exposeInMainWorld('electronAPI', {
     onDropdownClosed: (callback) => electron_1.ipcRenderer.on('on-dropdown-closed', callback),
     onDashboardOpened: (callback) => electron_1.ipcRenderer.on('dashboard-opened', callback),
     getSystemInfo: () => electron_1.ipcRenderer.invoke('get-system-info'),
+    // Backend Integration
+    startTask: (goal, provider) => electron_1.ipcRenderer.invoke('start-task', goal, provider),
+    saveApiKey: (provider, key) => electron_1.ipcRenderer.invoke('save-api-key', provider, key),
+    getApiKey: (provider) => electron_1.ipcRenderer.invoke('get-api-key', provider),
+    getModels: (provider) => electron_1.ipcRenderer.invoke('get-models', provider),
+    onTaskEvent: (callback) => electron_1.ipcRenderer.on('task-event', callback),
 });

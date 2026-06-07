@@ -18,4 +18,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   onDashboardOpened: (callback: () => void) => ipcRenderer.on('dashboard-opened', callback),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+
+  // Backend Integration
+  startTask: (goal: string, provider: string) => ipcRenderer.invoke('start-task', goal, provider),
+  saveApiKey: (provider: string, key: string) => ipcRenderer.invoke('save-api-key', provider, key),
+  getApiKey: (provider: string) => ipcRenderer.invoke('get-api-key', provider),
+  getModels: (provider: string) => ipcRenderer.invoke('get-models', provider),
+  onTaskEvent: (callback: (event: any, data: any) => void) => ipcRenderer.on('task-event', callback),
 })
