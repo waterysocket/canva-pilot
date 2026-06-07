@@ -6,7 +6,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "dev:electron": "tsc -p electron/tsconfig.json && concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "dev:electron": "tsc -p electron/tsconfig.json && concurrently -k --names TSC,VITE,ELECTRON -c cyan,magenta,yellow \"tsc -p electron/tsconfig.json -w --preserveWatchOutput\" \"vite\" \"wait-on tcp:5173 && electron .\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -33,10 +33,12 @@
     "cross-env": "^10.1.0",
     "electron": "^42.3.3",
     "electron-builder": "^26.15.0",
+    "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "nodemon": "^3.1.14",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
