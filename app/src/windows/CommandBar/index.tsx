@@ -13,6 +13,17 @@ export default function CommandBarWindow() {
   const [showModels, setShowModels] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
 
+  const api = () => (window as any).electronAPI;
+
+  const toggleDropdown = (open: boolean) => {
+    if (open) {
+      api()?.expandForDropdown();
+    } else {
+      // Only collapse if chat isn't expanded
+      if (!expanded) api()?.collapseDropdown();
+    }
+  };
+
   const models = ['Gemini 3.1 Pro', 'Qwen2.5-VL-7B', 'Claude 3.5 Sonnet', 'GPT-4o'];
   const projects = ['CanvaPilot Demo', 'Figma Automation', 'Notion Sync', 'Jira Triage'];
 
@@ -65,7 +76,7 @@ export default function CommandBarWindow() {
         boxShadow: '0 0 30px rgba(124, 58, 237, 0.25), 0 0 60px rgba(37, 99, 235, 0.15)'
       }}
     >
-    <div className="flex flex-col h-full w-full bg-black rounded-[11px] overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-black rounded-[11px]">
       {/* Top Row: Input and Window Controls */}
       <div className="flex items-center px-4 py-3 gap-3 border-b border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
         <div className="flex-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
@@ -110,7 +121,7 @@ export default function CommandBarWindow() {
         <div className="flex-1 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
           <div className="relative">
             <button 
-              onClick={() => setShowProjects(!showProjects)}
+              onClick={() => { const next = !showProjects; setShowProjects(next); setShowModels(false); toggleDropdown(next); }}
               className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-xs text-zinc-500 transition-colors"
             >
               <Folder size={11} className="text-purple-500/70" />
@@ -124,7 +135,7 @@ export default function CommandBarWindow() {
                   className="absolute top-full left-0 mt-1 w-48 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
                 >
                   {projects.map(p => (
-                    <button key={p} onClick={() => { setCurrentProject(p); setShowProjects(false); }} className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-zinc-300 transition-colors">
+                    <button key={p} onClick={() => { setCurrentProject(p); setShowProjects(false); toggleDropdown(false); }} className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-zinc-300 transition-colors">
                       {p}
                     </button>
                   ))}
@@ -137,7 +148,7 @@ export default function CommandBarWindow() {
         {/* Model selector — right, highlighted pill with coding font */}
         <div className="relative" style={{ WebkitAppRegion: 'no-drag' } as any}>
           <button 
-            onClick={() => setShowModels(!showModels)}
+            onClick={() => { const next = !showModels; setShowModels(next); setShowProjects(false); toggleDropdown(next); }}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all border border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/10"
             style={{ 
               background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(37,99,235,0.08) 100%)'
@@ -164,7 +175,7 @@ export default function CommandBarWindow() {
                 {models.map(m => (
                   <button 
                     key={m} 
-                    onClick={() => { setCurrentModel(m); setShowModels(false); }} 
+                    onClick={() => { setCurrentModel(m); setShowModels(false); toggleDropdown(false); }} 
                     className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                       m === currentModel 
                         ? 'text-purple-300 bg-purple-500/10' 

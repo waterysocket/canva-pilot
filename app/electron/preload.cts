@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeDashboard: () => ipcRenderer.send('close-dashboard'),
   minimizeApp: () => ipcRenderer.send('minimize-app'),
   closeApp: () => ipcRenderer.send('close-app'),
+  expandForDropdown: () => ipcRenderer.send('expand-for-dropdown'),
+  collapseDropdown: () => ipcRenderer.send('collapse-dropdown'),
   onDashboardOpened: (callback: () => void) => ipcRenderer.on('dashboard-opened', callback),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 })
