@@ -18,7 +18,7 @@ function createCommandBar() {
         resizable: false,
         alwaysOnTop: true,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, 'preload.cjs'),
             nodeIntegration: false,
             contextIsolation: true,
         },
@@ -39,14 +39,16 @@ function createDashboard() {
         height: 900,
         minWidth: 1000,
         minHeight: 700,
+        show: false,
+        backgroundColor: '#09090b', // Force opaque dark background
         titleBarStyle: 'hidden',
         titleBarOverlay: {
-            color: '#0f0f13',
+            color: '#09090b',
             symbolColor: '#74b1be',
             height: 40
         },
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, 'preload.cjs'),
             nodeIntegration: false,
             contextIsolation: true,
         },
@@ -55,7 +57,10 @@ function createDashboard() {
         ? 'http://localhost:5173#/dashboard'
         : `file://${path.join(__dirname, '../dist/index.html')}#/dashboard`;
     dashboardWindow.loadURL(startUrl);
-    dashboardWindow.maximize();
+    dashboardWindow.once('ready-to-show', () => {
+        dashboardWindow?.maximize();
+        dashboardWindow?.show();
+    });
     dashboardWindow.on('closed', () => {
         dashboardWindow = null;
     });
@@ -77,6 +82,23 @@ app.whenReady().then(() => {
         if (commandBarWindow) {
             commandBarWindow.webContents.send('dashboard-opened');
         }
+    });
+    ipcMain.on('close-dashboard', () => {
+        if (dashboardWindow) {
+            dashboardWindow.close();
+            dashboardWindow = null;
+        }
+        if (commandBarWindow) {
+            commandBarWindow.focus();
+        }
+    });
+    ipcMain.on('minimize-app', () => {
+        const win = BrowserWindow.getFocusedWindow();
+        if (win)
+            win.minimize();
+    });
+    ipcMain.on('close-app', () => {
+        app.quit();
     });
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0)

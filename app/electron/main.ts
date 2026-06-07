@@ -14,7 +14,7 @@ function createCommandBar() {
 
   commandBarWindow = new BrowserWindow({
     width: 700,
-    height: 80, // Initial small size
+    height: 95, // Initial small size
     x: Math.round(width / 2 - 350),
     y: Math.round(height / 4), // Top center
     frame: false,
@@ -87,7 +87,7 @@ app.whenReady().then(() => {
       if (expanded) {
         commandBarWindow.setSize(700, 500, true);
       } else {
-        commandBarWindow.setSize(700, 80, true);
+        commandBarWindow.setSize(700, 95, true);
       }
     }
   });

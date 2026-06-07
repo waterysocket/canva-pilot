@@ -32,7 +32,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
           <Zap size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">CanvasOS</h1>
+          <h1 className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">CanvaPilot</h1>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Developer Edition</p>
         </div>
       </div>

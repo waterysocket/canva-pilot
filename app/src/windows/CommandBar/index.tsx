@@ -59,7 +59,46 @@ export default function CommandBarWindow() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-zinc-900 border border-white/20 rounded-xl overflow-hidden shadow-2xl">
-      <div className="flex items-center p-3 gap-3 border-b border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
+      {/* Top Row: Input and Window Controls */}
+      <div className="flex items-center px-4 py-3 gap-3 border-b border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
+        <div className="flex-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
+          <form onSubmit={handleSubmit} className="flex items-center gap-3">
+            <Command size={18} className="text-primary" />
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask CanvaPilot to do something..."
+              className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
+              autoFocus
+            />
+          </form>
+        </div>
+        <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
+          <button 
+            onClick={openDashboard}
+            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors mr-1"
+            title="Open CanvaPilot Dashboard"
+          >
+            <Monitor size={14} />
+          </button>
+          <button 
+            onClick={() => (window as any).electronAPI?.minimizeApp()}
+            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors"
+          >
+            <Minus size={14} />
+          </button>
+          <button 
+            onClick={() => (window as any).electronAPI?.closeApp()}
+            className="p-1.5 rounded-md hover:bg-red-500/80 hover:text-white text-muted-foreground transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Row: Dropdowns */}
+      <div className="flex items-center p-2 px-4 gap-3" style={{ WebkitAppRegion: 'drag' } as any}>
         <div className="flex-1 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
           {/* Project Selector */}
           <div className="relative">
@@ -113,42 +152,6 @@ export default function CommandBarWindow() {
             </AnimatePresence>
           </div>
         </div>
-        
-        <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
-          <button 
-            onClick={openDashboard}
-            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors mr-1"
-            title="Open CanvasOS Dashboard"
-          >
-            <Monitor size={14} />
-          </button>
-          <button 
-            onClick={() => (window as any).electronAPI?.minimizeApp()}
-            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors"
-          >
-            <Minus size={14} />
-          </button>
-          <button 
-            onClick={() => (window as any).electronAPI?.closeApp()}
-            className="p-1.5 rounded-md hover:bg-red-500/80 hover:text-white text-muted-foreground transition-colors"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 py-3" style={{ WebkitAppRegion: 'no-drag' } as any}>
-        <form onSubmit={handleSubmit} className="flex items-center gap-3">
-          <Command size={18} className="text-primary" />
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask CanvaPilot to do something..."
-            className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
-            autoFocus
-          />
-        </form>
       </div>
 
       <AnimatePresence>
