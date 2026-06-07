@@ -52,8 +52,8 @@ function createDashboard() {
     backgroundColor: '#09090b', // Force opaque dark background
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#09090b',
-      symbolColor: '#74b1be',
+      color: '#111118',
+      symbolColor: '#7c3aed',
       height: 40
     },
     webPreferences: {

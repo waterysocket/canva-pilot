@@ -10,7 +10,7 @@ function createCommandBar() {
     const { width, height } = primaryDisplay.workAreaSize;
     commandBarWindow = new BrowserWindow({
         width: 700,
-        height: 80, // Initial small size
+        height: 95, // Initial small size
         x: Math.round(width / 2 - 350),
         y: Math.round(height / 4), // Top center
         frame: false,
@@ -63,6 +63,9 @@ function createDashboard() {
     });
     dashboardWindow.on('closed', () => {
         dashboardWindow = null;
+        if (commandBarWindow) {
+            commandBarWindow.show();
+        }
     });
 }
 app.whenReady().then(() => {
@@ -73,22 +76,24 @@ app.whenReady().then(() => {
                 commandBarWindow.setSize(700, 500, true);
             }
             else {
-                commandBarWindow.setSize(700, 80, true);
+                commandBarWindow.setSize(700, 95, true);
             }
         }
     });
     ipcMain.on('open-dashboard', () => {
         createDashboard();
         if (commandBarWindow) {
+            commandBarWindow.hide();
             commandBarWindow.webContents.send('dashboard-opened');
         }
     });
     ipcMain.on('close-dashboard', () => {
         if (dashboardWindow) {
             dashboardWindow.close();
-            dashboardWindow = null;
+            // the 'closed' event handler will show the command bar
         }
-        if (commandBarWindow) {
+        else if (commandBarWindow) {
+            commandBarWindow.show();
             commandBarWindow.focus();
         }
     });
