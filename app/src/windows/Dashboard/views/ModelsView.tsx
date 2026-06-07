@@ -492,7 +492,7 @@ export default function ModelsView() {
       </div>
 
       {/* Provider Cards Grid - Grouped by Type */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="flex flex-col gap-12">
         
         {/* Vision Models */}
         <div>
@@ -505,7 +505,7 @@ export default function ModelsView() {
               Visual models excel at "seeing" the screen, analyzing complex UI structures, and processing multimodal input like video streams or screenshots.
             </p>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {PROVIDERS.filter(p => p.type === 'vision').map((provider, idx) => (
               <motion.div
                 key={provider.id}
@@ -539,7 +539,7 @@ export default function ModelsView() {
               Reasoning models provide ultra-fast text inference, making them perfect for planning, thinking steps, and orchestrating complex automation logic securely.
             </p>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {PROVIDERS.filter(p => p.type === 'reasoning').map((provider, idx) => (
               <motion.div
                 key={provider.id}

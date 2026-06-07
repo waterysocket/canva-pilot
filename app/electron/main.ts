@@ -379,30 +379,45 @@ app.whenReady().then(() => {
     const dbPath = path.join(app.getPath('userData'), 'canvapilot.db');
     const chromaPath = path.join(app.getPath('userData'), 'chroma');
     
-    const dbManager = DatabaseManager.getInstance();
-    const taskRepo = new TaskRepository();
-    
-    // We would ideally count all tasks, for now we simulate returning total rows
-    const tasks = taskRepo.getAllTasks();
-    
-    const ke = KnowledgeEngine.getInstance();
-    const chromaStats = await ke.getCollectionStats('docs');
+    let tasksCount = 0;
+    let vectorsCount = 0;
+
+    try {
+      const taskRepo = new TaskRepository();
+      const tasks = taskRepo.getAllTasks();
+      tasksCount = tasks.length;
+    } catch (e) {
+      console.warn('get-db-stats: failed to read tasks', e);
+    }
+
+    try {
+      const ke = KnowledgeEngine.getInstance();
+      const chromaStats = await ke.getCollectionStats('docs');
+      vectorsCount = chromaStats?.count || 0;
+    } catch (e) {
+      console.warn('get-db-stats: failed to read chroma stats', e);
+    }
 
     return {
       sqlite: {
         path: dbPath,
-        tasksCount: tasks.length
+        tasksCount
       },
       chroma: {
         path: chromaPath,
-        vectorsCount: chromaStats.count
+        vectorsCount
       }
     };
   });
 
   ipcMain.handle('get-tasks', async () => {
-    const taskRepo = new TaskRepository();
-    return taskRepo.getAllTasks();
+    try {
+      const taskRepo = new TaskRepository();
+      return taskRepo.getAllTasks();
+    } catch (e) {
+      console.warn('get-tasks: failed', e);
+      return [];
+    }
   });
 
   ipcMain.handle('delete-document', async (event, collection: string, docId: string) => {

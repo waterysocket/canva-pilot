@@ -25,4 +25,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getApiKey: (provider: string) => ipcRenderer.invoke('get-api-key', provider),
   getModels: (provider: string) => ipcRenderer.invoke('get-models', provider),
   onTaskEvent: (callback: (event: any, data: any) => void) => ipcRenderer.on('task-event', callback),
+
+  // Generic invoke — bridges all ipcMain.handle channels to the renderer
+  invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args),
 })
