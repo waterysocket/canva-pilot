@@ -76,6 +76,9 @@ function createDashboard() {
   
   dashboardWindow.on('closed', () => {
     dashboardWindow = null;
+    if (commandBarWindow) {
+      commandBarWindow.show();
+    }
   });
 }
 
@@ -95,6 +98,7 @@ app.whenReady().then(() => {
   ipcMain.on('open-dashboard', () => {
     createDashboard();
     if (commandBarWindow) {
+      commandBarWindow.hide();
       commandBarWindow.webContents.send('dashboard-opened');
     }
   });
@@ -102,9 +106,9 @@ app.whenReady().then(() => {
   ipcMain.on('close-dashboard', () => {
     if (dashboardWindow) {
       dashboardWindow.close();
-      dashboardWindow = null;
-    }
-    if (commandBarWindow) {
+      // the 'closed' event handler will show the command bar
+    } else if (commandBarWindow) {
+      commandBarWindow.show();
       commandBarWindow.focus();
     }
   });
