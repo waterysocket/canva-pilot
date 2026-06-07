@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Command, Sparkles, Folder, ChevronDown, Monitor } from 'lucide-react';
+import { Command, Sparkles, Folder, ChevronDown, Monitor, Minus, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useAgentStore } from '../../store/useAgentStore';
 import AgentChat from './AgentChat';
@@ -114,14 +114,27 @@ export default function CommandBarWindow() {
           </div>
         </div>
         
-        <button 
-          onClick={openDashboard}
-          className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors"
-          title="Open CanvasOS Dashboard"
-          style={{ WebkitAppRegion: 'no-drag' } as any}
-        >
-          <Monitor size={14} />
-        </button>
+        <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
+          <button 
+            onClick={openDashboard}
+            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors mr-1"
+            title="Open CanvasOS Dashboard"
+          >
+            <Monitor size={14} />
+          </button>
+          <button 
+            onClick={() => (window as any).electronAPI?.minimizeApp()}
+            className="p-1.5 rounded-md hover:bg-white/10 text-muted-foreground transition-colors"
+          >
+            <Minus size={14} />
+          </button>
+          <button 
+            onClick={() => (window as any).electronAPI?.closeApp()}
+            className="p-1.5 rounded-md hover:bg-red-500/80 hover:text-white text-muted-foreground transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
       </div>
 
       <div className="px-4 py-3" style={{ WebkitAppRegion: 'no-drag' } as any}>

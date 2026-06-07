@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Bot, Database, Network, 
   BookOpen, Activity, Cpu, ShoppingBag, 
-  HardDrive, Settings, Zap 
+  HardDrive, Settings, Zap, ArrowLeft 
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -35,6 +35,16 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
           <h1 className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">CanvasOS</h1>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Developer Edition</p>
         </div>
+      </div>
+
+      <div className="px-4 pb-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
+        <button 
+          onClick={() => (window as any).electronAPI?.closeDashboard()}
+          className="w-full flex items-center justify-center gap-2 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-colors shadow-sm"
+        >
+          <ArrowLeft size={14} />
+          Back to Command Bar
+        </button>
       </div>
 
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4" style={{ WebkitAppRegion: 'no-drag' } as any}>

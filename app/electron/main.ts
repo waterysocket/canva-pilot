@@ -99,6 +99,25 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.on('close-dashboard', () => {
+    if (dashboardWindow) {
+      dashboardWindow.close();
+      dashboardWindow = null;
+    }
+    if (commandBarWindow) {
+      commandBarWindow.focus();
+    }
+  });
+
+  ipcMain.on('minimize-app', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) win.minimize();
+  });
+
+  ipcMain.on('close-app', () => {
+    app.quit();
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createCommandBar();
   });
