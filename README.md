@@ -4,7 +4,7 @@ A **open‑source** AI‑augmented design assistant built with **React, TypeScri
 
 ---
 
-## ✨ Overview
+## Overview
 - **Dashboard** – System configurations, hardware info, model compatibility, and a knowledge base.
 - **Command Bar** – Quick prompt entry and task orchestration.
 - **Context Engine** – Independent knowledge‑base layer that stores and queries documents using ChromaDB. It can be swapped out or extended for any software.
@@ -12,7 +12,7 @@ A **open‑source** AI‑augmented design assistant built with **React, TypeScri
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 ### Prerequisites
 - **Node.js** (v20+) and **npm** (or **pnpm/yarn**)
 - **Git**
@@ -58,7 +58,7 @@ This will:
 
 ---
 
-## 🌐 Ports & How to Change Them
+## Ports & How to Change Them
 | Service | Default Port | How to Change |
 | ------- | ------------ | ------------- |
 | Vite dev server | **5173** | Set `VITE_PORT` in a `.env` file or edit `vite.config.ts` → `server.port`.
@@ -87,7 +87,7 @@ If a port is already in use, stop the conflicting process or assign a new one us
 
 ---
 
-## 📈 Future Scope & Extensibility
+## Future Scope & Extensibility
 - **Open‑source** – The entire codebase is MIT‑licensed, encouraging community contributions.
 - **Context Engine Layer** – Completely decoupled from the UI and model layers. You can replace ChromaDB with any vector store (e.g., Pinecone, Weaviate) or plug in a custom knowledge‑base without touching the dashboard or command‑bar code.
 - **Custom Software Integration** – Because the engine works over a simple IPC API, any desktop or web application can embed the Context Engine to provide RAG‑powered assistance.
@@ -104,7 +104,7 @@ If a port is already in use, stop the conflicting process or assign a new one us
 
 ---
 
-## 📄 License
+## License
 MIT © 2026 waterysocket.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
