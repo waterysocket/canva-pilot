@@ -59,11 +59,30 @@ This will:
 ---
 
 ## 🌐 Ports & How to Change Them
+## 🌐 Ports & How to Change Them
 | Service | Default Port | How to Change |
 | ------- | ------------ | ------------- |
 | Vite dev server | **5173** | Set `VITE_PORT` in a `.env` file or edit `vite.config.ts` → `server.port`.
 | ChromaDB | **8000** | Pass `-p <new>:8000` to Docker (`docker run -p 9000:8000 …`) and update the vector store client in `app/electron/src/main/knowledge/ChromaVectorStore.ts` – change the `path` option.
-| Electron IPC (internal) | No external port – uses Node IPC.
+| Ollama (LLM provider) | **11434** | Run `ollama serve` (default) or change via `OLLAMA_HOST` env var. Update provider config in `ModelsView.tsx` if you use a custom port.
+| Electron IPC (internal) | No external port – uses Node IPC. |
+
+### 🦙 Running Ollama Models (PowerShell)
+```powershell
+# Install Ollama (if not already installed)
+# Download from https://ollama.com/download and run the installer.
+
+# Start the Ollama server (default port 11434)
+ollama serve &
+
+# Pull a model (e.g., llama3, phi)
+ollama pull llama3
+
+# Verify model is available
+ollama list
+```
+You can now select the "Ollama" provider in the **Models** page. The app will communicate with the local Ollama server at `http://localhost:11434`.
+
 
 If a port is already in use, stop the conflicting process or assign a new one using the methods above, then restart the affected service.
 
