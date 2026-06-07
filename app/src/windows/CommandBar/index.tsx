@@ -104,27 +104,27 @@ export default function CommandBarWindow() {
         </div>
       </div>
 
-      {/* Bottom Row: Dropdowns */}
-      <div className="flex items-center p-2 px-4 gap-3" style={{ WebkitAppRegion: 'drag' } as any}>
+      {/* Bottom Row: Project (left) + Model highlighted pill (right) */}
+      <div className="flex items-center py-1.5 px-3 gap-3 border-t border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
+        {/* Project selector — left */}
         <div className="flex-1 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
-          {/* Project Selector */}
           <div className="relative">
             <button 
               onClick={() => setShowProjects(!showProjects)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-xs text-muted-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-xs text-zinc-500 transition-colors"
             >
-              <Folder size={12} className="text-primary" />
+              <Folder size={11} className="text-purple-500/70" />
               {currentProject}
-              <ChevronDown size={12} />
+              <ChevronDown size={10} />
             </button>
             <AnimatePresence>
               {showProjects && (
                 <motion.div 
                   initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                  className="absolute top-full left-0 mt-1 w-48 bg-card border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
+                  className="absolute top-full left-0 mt-1 w-48 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
                 >
                   {projects.map(p => (
-                    <button key={p} onClick={() => { setCurrentProject(p); setShowProjects(false); }} className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 transition-colors">
+                    <button key={p} onClick={() => { setCurrentProject(p); setShowProjects(false); }} className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-zinc-300 transition-colors">
                       {p}
                     </button>
                   ))}
@@ -132,32 +132,53 @@ export default function CommandBarWindow() {
               )}
             </AnimatePresence>
           </div>
+        </div>
 
-          {/* Model Selector */}
-          <div className="relative">
-            <button 
-              onClick={() => setShowModels(!showModels)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-xs text-muted-foreground transition-colors"
+        {/* Model selector — right, highlighted pill with coding font */}
+        <div className="relative" style={{ WebkitAppRegion: 'no-drag' } as any}>
+          <button 
+            onClick={() => setShowModels(!showModels)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all border border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/10"
+            style={{ 
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(37,99,235,0.08) 100%)'
+            }}
+          >
+            <Sparkles size={10} className="text-blue-400" />
+            <span 
+              className="text-[11px] font-medium text-purple-300"
+              style={{ fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace' }}
             >
-              <Sparkles size={12} className="text-secondary" />
               {currentModel}
-              <ChevronDown size={12} />
-            </button>
-            <AnimatePresence>
-              {showModels && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                  className="absolute top-full left-0 mt-1 w-48 bg-card border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
-                >
-                  {models.map(m => (
-                    <button key={m} onClick={() => { setCurrentModel(m); setShowModels(false); }} className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 transition-colors">
-                      {m}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            </span>
+            <ChevronDown size={10} className="text-purple-400/60" />
+          </button>
+          <AnimatePresence>
+            {showModels && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                className="absolute bottom-full right-0 mb-1 w-52 bg-zinc-900 border border-purple-500/20 rounded-lg shadow-xl z-50 overflow-hidden"
+              >
+                <div className="px-3 py-1.5 border-b border-white/5">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Select Model</span>
+                </div>
+                {models.map(m => (
+                  <button 
+                    key={m} 
+                    onClick={() => { setCurrentModel(m); setShowModels(false); }} 
+                    className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                      m === currentModel 
+                        ? 'text-purple-300 bg-purple-500/10' 
+                        : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'
+                    }`}
+                    style={{ fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}
+                  >
+                    {m === currentModel && <span className="mr-1.5 text-purple-400">›</span>}
+                    {m}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
