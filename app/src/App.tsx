@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import CommandBarWindow from './windows/CommandBar';
 import DashboardWindow from './windows/Dashboard';
+import DropdownWindow from './windows/Dropdown';
 
 export default function App() {
-  const [view, setView] = useState<'commandbar' | 'dashboard'>('commandbar');
+  const [view, setView] = useState<'commandbar' | 'dashboard' | 'dropdown'>('commandbar');
 
   useEffect(() => {
     // Add dark mode class by default
@@ -13,6 +14,8 @@ export default function App() {
       const hash = window.location.hash;
       if (hash === '#/dashboard') {
         setView('dashboard');
+      } else if (hash === '#/dropdown') {
+        setView('dropdown');
       } else {
         setView('commandbar');
       }
@@ -28,6 +31,7 @@ export default function App() {
     <>
       {view === 'commandbar' && <CommandBarWindow />}
       {view === 'dashboard' && <DashboardWindow />}
+      {view === 'dropdown' && <DropdownWindow />}
     </>
   );
 }

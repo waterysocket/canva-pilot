@@ -8,8 +8,12 @@ electron_1.contextBridge.exposeInMainWorld('electronAPI', {
     closeDashboard: () => electron_1.ipcRenderer.send('close-dashboard'),
     minimizeApp: () => electron_1.ipcRenderer.send('minimize-app'),
     closeApp: () => electron_1.ipcRenderer.send('close-app'),
-    expandForDropdown: () => electron_1.ipcRenderer.send('expand-for-dropdown'),
-    collapseDropdown: () => electron_1.ipcRenderer.send('collapse-dropdown'),
+    // Dropdown IPC
+    showDropdown: (params) => electron_1.ipcRenderer.send('show-dropdown', params),
+    hideDropdown: () => electron_1.ipcRenderer.send('hide-dropdown'),
+    dropdownSelect: (params) => electron_1.ipcRenderer.send('dropdown-select', params),
+    onDropdownData: (callback) => electron_1.ipcRenderer.on('on-dropdown-data', callback),
+    onDropdownSelected: (callback) => electron_1.ipcRenderer.on('on-dropdown-selected', callback),
     onDashboardOpened: (callback) => electron_1.ipcRenderer.on('dashboard-opened', callback),
     getSystemInfo: () => electron_1.ipcRenderer.invoke('get-system-info'),
 });

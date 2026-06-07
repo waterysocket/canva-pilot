@@ -6,7 +6,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "dev:electron": "tsc -p electron/tsconfig.json && concurrently -k --names TSC,VITE,ELECTRON -c cyan,magenta,yellow \"tsc -p electron/tsconfig.json -w --preserveWatchOutput\" \"vite\" \"wait-on tcp:5173 && nodemon --watch dist-electron --ext js,cjs --exec 'electron .'\"",
+    "dev:electron": "tsc -p electron/tsconfig.json && concurrently -k --names TSC,VITE,ELECTRON -c cyan,magenta,yellow \"tsc -p electron/tsconfig.json -w --preserveWatchOutput\" \"vite\" \"wait-on tcp:5173 && nodemon --watch dist-electron --ext js,cjs --exec electron .\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

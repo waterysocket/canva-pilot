@@ -9,6 +9,35 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 let commandBarWindow: BrowserWindow | null = null;
 let dashboardWindow: BrowserWindow | null = null;
+let dropdownWindow: BrowserWindow | null = null;
+
+function createDropdownWindow() {
+  dropdownWindow = new BrowserWindow({
+    width: 250,
+    height: 300,
+    show: false,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  const startUrl = isDev 
+    ? 'http://localhost:5173#/dropdown' 
+    : `file://${path.join(__dirname, '../dist/index.html')}#/dropdown`;
+
+  dropdownWindow.loadURL(startUrl);
+
+  dropdownWindow.on('blur', () => {
+    dropdownWindow?.hide();
+  });
+}
 
 function createCommandBar() {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -86,6 +115,7 @@ function createDashboard() {
 
 app.whenReady().then(() => {
   createCommandBar();
+  createDropdownWindow();
 
   ipcMain.on('resize-window', (event, expanded: boolean) => {
     if (commandBarWindow) {
@@ -97,23 +127,33 @@ app.whenReady().then(() => {
     }
   });
 
-  // Temporarily expand the window so dropdowns aren't clipped
-  ipcMain.on('expand-for-dropdown', () => {
-    if (commandBarWindow) {
-      const bounds = commandBarWindow.getBounds();
-      if (bounds.height <= 95) {
-        commandBarWindow.setBounds({ ...bounds, height: 290 }, true);
-      }
+  // Secondary window dropdown logic
+  ipcMain.on('show-dropdown', (event, { type, x, y, width }) => {
+    if (dropdownWindow && commandBarWindow) {
+      const cbBounds = commandBarWindow.getBounds();
+      // x and y are relative to the command bar window's top-left corner
+      dropdownWindow.setBounds({
+        x: cbBounds.x + x,
+        y: cbBounds.y + y,
+        width: width,
+        height: 300 // Max height for dropdown
+      });
+      dropdownWindow.showInactive(); // Show without taking focus from command bar
+      dropdownWindow.webContents.send('on-dropdown-data', { type });
     }
   });
 
-  ipcMain.on('collapse-dropdown', () => {
-    if (commandBarWindow) {
-      const bounds = commandBarWindow.getBounds();
-      if (bounds.height <= 290) {
-        commandBarWindow.setBounds({ ...bounds, height: 95 }, true);
-      }
+  ipcMain.on('hide-dropdown', () => {
+    if (dropdownWindow) {
+      dropdownWindow.hide();
     }
+  });
+
+  ipcMain.on('dropdown-select', (event, { type, value }) => {
+    if (commandBarWindow) {
+      commandBarWindow.webContents.send('on-dropdown-selected', { type, value });
+    }
+    if (dropdownWindow) dropdownWindow.hide();
   });
 
   ipcMain.on('open-dashboard', () => {
