@@ -167,7 +167,7 @@ export default function CommandBarWindow() {
             {showModels && (
               <motion.div 
                 initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                className="absolute bottom-full right-0 mb-1 w-52 bg-zinc-900 border border-purple-500/20 rounded-lg shadow-xl z-50 overflow-hidden"
+                className="absolute top-full right-0 mt-1 w-52 bg-zinc-900 border border-purple-500/20 rounded-lg shadow-xl z-50 overflow-hidden"
               >
                 <div className="px-3 py-1.5 border-b border-white/5">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600">Select Model</span>

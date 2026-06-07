@@ -7,23 +7,6 @@ import { createRequire } from 'module'
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
-// Hot-reload in dev: restarts electron when compiled output changes
-if (isDev) {
-  const require = createRequire(import.meta.url);
-  try {
-    const electronBin = process.platform === 'win32'
-      ? path.join(__dirname, '..', 'node_modules', '.bin', 'electron.cmd')
-      : path.join(__dirname, '..', 'node_modules', '.bin', 'electron');
-    require('electron-reload')(__dirname, {
-      electron: electronBin,
-      hardResetMethod: 'exit',
-      watched: [path.join(__dirname, 'main.js')],
-    });
-  } catch (e) {
-    console.warn('electron-reload not available:', e);
-  }
-}
-
 let commandBarWindow: BrowserWindow | null = null;
 let dashboardWindow: BrowserWindow | null = null;
 

@@ -5,15 +5,6 @@ import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-// Hot-reload in dev: restarts electron when compiled output changes
-if (isDev) {
-    const require = createRequire(import.meta.url);
-    require('electron-reload')(__dirname, {
-        electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
-        hardResetMethod: 'exit',
-        watched: [path.join(__dirname, 'main.js')],
-    });
-}
 let commandBarWindow = null;
 let dashboardWindow = null;
 function createCommandBar() {
