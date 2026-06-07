@@ -19,7 +19,6 @@ const navItems = [
   { id: 'knowledge', label: 'Knowledge Base', icon: BookOpen },
   { id: 'monitor', label: 'Execution Monitor', icon: Activity },
   { id: 'models', label: 'Models', icon: Cpu },
-  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
   { id: 'storage', label: 'Storage', icon: HardDrive },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];

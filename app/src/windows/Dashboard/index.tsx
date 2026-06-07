@@ -10,6 +10,7 @@ import ExecutionMonitorView from './views/ExecutionMonitorView';
 import KnowledgeBaseView from './views/KnowledgeBaseView';
 import ModelsView from './views/ModelsView';
 import SettingsView from './views/SettingsView';
+import StorageView from './views/StorageView';
 
 interface SystemInfo {
   ram: { used: number; total: number; percent: number };
@@ -131,10 +132,8 @@ export default function DashboardWindow() {
         return <ExecutionMonitorView />;
       case 'models':
         return <ModelsView />;
-      case 'marketplace':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Marketplace</h1><p className="text-zinc-500">Coming soon — share and discover Context Packs, Workflows, and Automation Templates.</p></div>;
       case 'storage':
-        return <div className="p-8 text-white"><h1 className="text-3xl font-bold mb-6">Storage</h1><p className="text-zinc-500">SQLite database browser and ChromaDB collection manager.</p></div>;
+        return <StorageView />;
       case 'settings':
         return <SettingsView />;
       default:

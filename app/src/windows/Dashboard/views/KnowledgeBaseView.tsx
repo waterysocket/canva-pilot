@@ -14,6 +14,7 @@ import {
   Hash,
   ExternalLink,
   Database,
+  Zap,
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
@@ -388,11 +389,6 @@ function IngestPanel() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Zap import for ingest button                                       */
-/* ------------------------------------------------------------------ */
-
-import { Zap as ZapIcon } from 'lucide-react'; // already imported above, re-use
 
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
