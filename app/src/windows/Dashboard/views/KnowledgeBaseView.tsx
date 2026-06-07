@@ -178,15 +178,18 @@ const itemVariants = {
 /*  Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
-function CollectionCard({ collection }: { collection: Collection }) {
+function CollectionCard({ collection, isActive, onClick }: { collection: Collection; isActive?: boolean; onClick?: () => void }) {
   const status = statusConfig[collection.status];
 
   return (
     <motion.div
       variants={itemVariants}
       whileHover={{ scale: 1.02, borderColor: 'rgba(168,85,247,0.25)' }}
-      className="group relative p-5 rounded-2xl border border-white/5 transition-all duration-300 cursor-default overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.025)' }}
+      onClick={onClick}
+      className={cn(
+        "group relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden",
+        isActive ? "border-purple-500/40 bg-purple-500/5 shadow-[0_0_15px_rgba(168,85,247,0.1)]" : "border-white/5 bg-white/[0.025]"
+      )}
     >
       {/* Hover glow */}
       <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-purple-500/5 to-blue-500/5" />
@@ -419,15 +422,16 @@ export default function KnowledgeBaseView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [realDocs, setRealDocs] = useState<Document[]>([]);
+  const [activeCollection, setActiveCollection] = useState<string>('docs');
 
-  const fetchStats = async () => {
+  const fetchStats = async (collectionId: string) => {
     const api = (window as any).electronAPI;
-    if (api) {
+    if (api?.invoke) {
       try {
         const resStats = await api.invoke('get-db-stats');
         setStats(resStats);
         
-        const docs = await api.invoke('get-documents', 'docs');
+        const docs = await api.invoke('get-documents', collectionId);
         setRealDocs(docs || []);
       } catch (e) {
         console.error(e);
@@ -437,18 +441,18 @@ export default function KnowledgeBaseView() {
 
   const handleDeleteDoc = async (id: string, collection: string) => {
     const api = (window as any).electronAPI;
-    if (api) {
+    if (api?.invoke) {
       await api.invoke('delete-document', collection, id);
-      fetchStats();
+      fetchStats(activeCollection);
     }
   };
 
   React.useEffect(() => {
-    fetchStats();
-    const handleUpdate = () => fetchStats();
+    fetchStats(activeCollection);
+    const handleUpdate = () => fetchStats(activeCollection);
     window.addEventListener('knowledge-updated', handleUpdate);
     return () => window.removeEventListener('knowledge-updated', handleUpdate);
-  }, []);
+  }, [activeCollection]);
 
   const dynamicCollections = useMemo(() => {
     return collections.map(c => {
@@ -548,6 +552,8 @@ export default function KnowledgeBaseView() {
                   <CollectionCard
                     key={collection.id}
                     collection={collection}
+                    isActive={activeCollection === collection.id}
+                    onClick={() => setActiveCollection(collection.id)}
                   />
                 ))
               ) : (
