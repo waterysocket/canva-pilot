@@ -213,19 +213,19 @@ export default function ExecutionMonitorView() {
     }
     
     // Fetch history
-    if (api) {
+    if (api?.invoke) {
       api.invoke('get-tasks').then((tasks: any[]) => {
-        if (tasks && tasks.length > 0) {
+        if (Array.isArray(tasks) && tasks.length > 0) {
           const mapped: HistoryTask[] = tasks.map((t: any) => ({
-            id: t.id.toString(),
-            goal: t.goal,
-            status: t.status,
-            timestamp: new Date(t.startedAt).toLocaleString(),
+            id: String(t.id || ''),
+            goal: t.goal || 'Unknown task',
+            status: t.status || 'pending',
+            timestamp: t.startedAt ? new Date(t.startedAt).toLocaleString() : '--',
             duration: t.durationMs ? formatElapsed(t.durationMs) : '--'
           }));
           setHistory(mapped.reverse());
         }
-      }).catch(console.error);
+      }).catch((e: any) => console.warn('Failed to fetch task history', e));
     }
   }, [handleTaskEvent]);
 

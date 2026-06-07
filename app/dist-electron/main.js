@@ -293,9 +293,12 @@ app.whenReady().then(() => {
         return configured;
     });
     ipcMain.handle('get-hardware-recommendations', async (event, sysInfo) => {
+        if (!sysInfo || !sysInfo.vram || !sysInfo.ram) {
+            return [];
+        }
         // Basic logic mapping sysInfo to models
-        const vramGB = sysInfo.vram.total;
-        const isLowEnd = sysInfo.ram.total < 16 && vramGB < 4;
+        const vramGB = sysInfo.vram.total || 0;
+        const isLowEnd = (sysInfo.ram.total || 0) < 16 && vramGB < 4;
         // Default standard set
         let recommendations = [
             { id: 'groq-llama3', name: 'Groq Llama 3 (Fastest)', type: 'reasoning', reason: 'Ultra-fast inference, perfect for planning.' },

@@ -255,28 +255,33 @@ export default function DashboardOverview() {
       const api = (window as any).electronAPI;
       if (!api) return;
       try {
-        const [tasks, dbStats, models] = await Promise.all([
+        const results = await Promise.allSettled([
           api.invoke('get-tasks'),
           api.invoke('get-db-stats'),
           api.invoke('get-configured-models')
         ]);
         
+        const tasks = results[0].status === 'fulfilled' ? (results[0].value || []) : [];
+        const dbStats = results[1].status === 'fulfilled' ? results[1].value : null;
+        const models = results[2].status === 'fulfilled' ? (results[2].value || []) : [];
+
         // Compute uptime
         const uptimeMs = Date.now() - startTime.current;
         const uptimeMins = Math.floor(uptimeMs / 60000);
         const uptimeHrs = Math.floor(uptimeMins / 60);
         const uptimeStr = uptimeHrs > 0 ? `${uptimeHrs}h ${uptimeMins % 60}m` : `${uptimeMins}m`;
 
-        const completedTasks = tasks.filter((t: any) => t.status === 'completed').length;
+        const completedTasks = Array.isArray(tasks) ? tasks.filter((t: any) => t.status === 'completed').length : 0;
         
         setLiveStats([
           { ...DEFAULT_STATS[0], value: completedTasks },
           { ...DEFAULT_STATS[1], value: dbStats?.chroma?.vectorsCount || 0 },
-          { ...DEFAULT_STATS[2], value: models.length },
+          { ...DEFAULT_STATS[2], value: Array.isArray(models) ? models.length : 0 },
           { ...DEFAULT_STATS[3], value: uptimeStr }
         ]);
 
-        const recentTasks = tasks.slice(0, 5).map((t: any) => ({
+        const taskArr = Array.isArray(tasks) ? tasks : [];
+        const recentTasks = taskArr.slice(0, 5).map((t: any) => ({
           id: t.id,
           icon: t.status === 'completed' ? CheckCircle2 : (t.status === 'failed' ? Zap : Activity),
           description: `Task ${t.status}: ${t.goal}`,

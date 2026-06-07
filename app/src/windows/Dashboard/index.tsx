@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './Sidebar';
-import { Cpu, MemoryStick, MonitorDot, HardDrive, RefreshCw } from 'lucide-react';
+import { Cpu, MemoryStick, MonitorDot, HardDrive, RefreshCw, AlertTriangle } from 'lucide-react';
 
 // View components
 import DashboardOverview from './views/DashboardOverview';
@@ -11,6 +11,53 @@ import KnowledgeBaseView from './views/KnowledgeBaseView';
 import ModelsView from './views/ModelsView';
 import SettingsView from './views/SettingsView';
 import StorageView from './views/StorageView';
+
+/* ------------------------------------------------------------------ */
+/*  Error Boundary — prevents one crashing view from blanking the app  */
+/* ------------------------------------------------------------------ */
+class ViewErrorBoundary extends React.Component<
+  { children: React.ReactNode; viewName?: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error(`[ViewErrorBoundary] ${this.props.viewName || 'View'} crashed:`, error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 text-white flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+            <AlertTriangle size={28} className="text-red-400" />
+          </div>
+          <h2 className="text-lg font-semibold text-zinc-200 mb-2">Something went wrong</h2>
+          <p className="text-sm text-zinc-500 max-w-md text-center mb-4">
+            This view encountered an error. This is usually caused by a backend service that isn't ready yet.
+          </p>
+          <pre className="text-xs text-red-400/70 bg-white/[0.02] border border-white/5 rounded-lg p-3 max-w-lg overflow-auto">
+            {this.state.error?.message || 'Unknown error'}
+          </pre>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider border border-purple-500/30 text-purple-300 hover:bg-purple-500/10 transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface SystemInfo {
   ram: { used: number; total: number; percent: number };
@@ -105,8 +152,13 @@ export default function DashboardWindow() {
       setSysInfo(data);
       setLastUpdated(new Date());
 
-      const recommendations = await api.invoke('get-hardware-recommendations', data);
-      setRecommendedModels(recommendations || []);
+      try {
+        const recommendations = await api.invoke('get-hardware-recommendations', data);
+        setRecommendedModels(recommendations || []);
+      } catch (e) {
+        console.warn('Hardware recommendations unavailable', e);
+        setRecommendedModels([]);
+      }
     } catch (e) {
       console.error('Failed to fetch system info', e);
     } finally {
@@ -154,7 +206,9 @@ export default function DashboardWindow() {
       <main className="flex-1 overflow-y-auto relative bg-transparent backdrop-blur-[2px]">
         <div className="absolute top-0 left-0 w-full h-10" style={{ WebkitAppRegion: 'drag' } as any} />
         <div className="pt-10 h-full">
-          {renderView()}
+          <ViewErrorBoundary key={activeView} viewName={activeView}>
+            {renderView()}
+          </ViewErrorBoundary>
         </div>
       </main>
 

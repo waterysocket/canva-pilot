@@ -8,8 +8,10 @@ export default function StorageView() {
 
   useEffect(() => {
     const api = (window as any).electronAPI;
-    if (api) {
-      api.invoke('get-db-stats').then((res: any) => setStats(res)).catch(console.error);
+    if (api?.invoke) {
+      api.invoke('get-db-stats')
+        .then((res: any) => { if (res) setStats(res); })
+        .catch((e: any) => console.warn('Failed to fetch db stats', e));
     }
   }, []);
   return (
