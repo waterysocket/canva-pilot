@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import path from 'path'
+import os from 'os'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
 
@@ -131,6 +132,88 @@ app.whenReady().then(() => {
 
   ipcMain.on('close-app', () => {
     app.quit();
+  });
+
+  // System hardware info handler
+  ipcMain.handle('get-system-info', async () => {
+    const require = createRequire(import.meta.url);
+    const si = require('systeminformation');
+
+    // RAM
+    const totalRamBytes = os.totalmem();
+    const freeRamBytes = os.freemem();
+    const totalRamGB = totalRamBytes / (1024 ** 3);
+    const usedRamGB = (totalRamBytes - freeRamBytes) / (1024 ** 3);
+
+    // CPU
+    const cpus = os.cpus();
+    const cpuModel = cpus[0]?.model ?? 'Unknown CPU';
+    const cpuCores = cpus.length;
+    let cpuLoad = 0;
+    try {
+      const load = await si.currentLoad();
+      cpuLoad = Math.round(load.currentLoad);
+    } catch {}
+
+    // VRAM (GPU)
+    let vramUsedGB = 0;
+    let vramTotalGB = 0;
+    let gpuName = 'Unknown GPU';
+    try {
+      const gpuData = await si.graphics();
+      const gpu = gpuData.controllers?.[0];
+      if (gpu) {
+        gpuName = gpu.model ?? gpuName;
+        vramTotalGB = (gpu.vram ?? 0) / 1024; // si returns MB
+        vramUsedGB = (gpu.memoryUsed ?? 0) / 1024;
+        // fallback: if memoryUsed not available
+        if (!vramUsedGB && gpu.vram) {
+          vramUsedGB = 0;
+        }
+      }
+    } catch {}
+
+    // Disk
+    let diskUsedGB = 0;
+    let diskTotalGB = 0;
+    let diskFreeGB = 0;
+    try {
+      const fsData = await si.fsSize();
+      // Primary drive (largest)
+      const primary = fsData
+        .filter((f: any) => f.size > 0)
+        .sort((a: any, b: any) => b.size - a.size)[0];
+      if (primary) {
+        diskTotalGB = primary.size / (1024 ** 3);
+        diskUsedGB = primary.used / (1024 ** 3);
+        diskFreeGB = diskTotalGB - diskUsedGB;
+      }
+    } catch {}
+
+    return {
+      ram: {
+        used: parseFloat(usedRamGB.toFixed(1)),
+        total: parseFloat(totalRamGB.toFixed(1)),
+        percent: Math.round((usedRamGB / totalRamGB) * 100),
+      },
+      vram: {
+        used: parseFloat(vramUsedGB.toFixed(1)),
+        total: parseFloat(vramTotalGB.toFixed(1)),
+        percent: vramTotalGB > 0 ? Math.round((vramUsedGB / vramTotalGB) * 100) : 0,
+        gpuName,
+      },
+      cpu: {
+        model: cpuModel,
+        cores: cpuCores,
+        load: cpuLoad,
+      },
+      disk: {
+        used: parseFloat(diskUsedGB.toFixed(1)),
+        total: parseFloat(diskTotalGB.toFixed(1)),
+        free: parseFloat(diskFreeGB.toFixed(1)),
+        percent: diskTotalGB > 0 ? Math.round((diskUsedGB / diskTotalGB) * 100) : 0,
+      },
+    };
   });
 
   app.on('activate', () => {

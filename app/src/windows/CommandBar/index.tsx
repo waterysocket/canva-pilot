@@ -58,7 +58,14 @@ export default function CommandBarWindow() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-zinc-900 border border-white/20 rounded-xl overflow-hidden shadow-2xl">
+    <div
+      className="flex flex-col h-screen w-full rounded-xl p-[1px] shadow-2xl"
+      style={{ 
+        background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #7c3aed 100%)',
+        boxShadow: '0 0 30px rgba(124, 58, 237, 0.25), 0 0 60px rgba(37, 99, 235, 0.15)'
+      }}
+    >
+    <div className="flex flex-col h-full w-full bg-black rounded-[11px] overflow-hidden">
       {/* Top Row: Input and Window Controls */}
       <div className="flex items-center px-4 py-3 gap-3 border-b border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
         <div className="flex-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
@@ -167,6 +174,7 @@ export default function CommandBarWindow() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }

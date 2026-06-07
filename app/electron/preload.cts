@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeApp: () => ipcRenderer.send('minimize-app'),
   closeApp: () => ipcRenderer.send('close-app'),
   onDashboardOpened: (callback: () => void) => ipcRenderer.on('dashboard-opened', callback),
+  getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 })
