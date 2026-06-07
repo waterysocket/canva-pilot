@@ -168,6 +168,9 @@ app.whenReady().then(() => {
       commandBarWindow.hide();
       commandBarWindow.webContents.send('dashboard-opened');
     }
+    if (dropdownWindow) {
+      dropdownWindow.hide();
+    }
   });
 
   ipcMain.on('close-dashboard', () => {
@@ -183,6 +186,9 @@ app.whenReady().then(() => {
   ipcMain.on('minimize-app', () => {
     const win = BrowserWindow.getFocusedWindow();
     if (win) win.minimize();
+    if (dropdownWindow) {
+      dropdownWindow.hide();
+    }
   });
 
   ipcMain.on('close-app', () => {
