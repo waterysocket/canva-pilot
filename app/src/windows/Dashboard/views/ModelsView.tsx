@@ -61,8 +61,8 @@ const PROVIDERS: ProviderConfig[] = [
     gradient: 'from-green-400 to-emerald-500',
     glowColor: 'shadow-green-500/20',
     apiKeyUrl: 'https://platform.openai.com/api-keys',
-    type: 'vision',
-    description: 'Visual Analysis: Excels at "seeing" the screen and analyzing the UI structure.'
+    type: 'reasoning',
+    description: 'LLM Reasoning: Excels at complex logic, text inference, and broad knowledge queries.'
   },
   {
     id: 'claude',
@@ -71,8 +71,8 @@ const PROVIDERS: ProviderConfig[] = [
     gradient: 'from-orange-400 to-amber-500',
     glowColor: 'shadow-orange-500/20',
     apiKeyUrl: 'https://console.anthropic.com/settings/keys',
-    type: 'vision',
-    description: 'Visual Analysis: Top tier for reading code and analyzing complex visual interfaces.'
+    type: 'reasoning',
+    description: 'LLM Reasoning: Top tier for reading code, debugging, and analyzing complex logical systems.'
   },
   {
     id: 'gemini',
@@ -81,8 +81,8 @@ const PROVIDERS: ProviderConfig[] = [
     gradient: 'from-blue-500 to-cyan-400',
     glowColor: 'shadow-blue-500/20',
     apiKeyUrl: 'https://aistudio.google.com/app/apikey',
-    type: 'vision',
-    description: 'Visual Analysis: Very fast at processing multimodal input including video streams.'
+    type: 'reasoning',
+    description: 'LLM Reasoning: Very fast at processing massive contexts and generating long-form outputs.'
   },
   {
     id: 'groq',
@@ -111,8 +111,8 @@ const PROVIDERS: ProviderConfig[] = [
     gradient: 'from-indigo-400 to-violet-500',
     glowColor: 'shadow-indigo-500/20',
     isLocal: true,
-    type: 'reasoning',
-    description: 'Local AI: Run reasoning models directly on your hardware securely. No cloud needed.'
+    type: 'vision',
+    description: 'Local Visual Analysis: Run multimodal models like LLaVA directly on your hardware securely. No cloud needed.'
   },
 ];
 
