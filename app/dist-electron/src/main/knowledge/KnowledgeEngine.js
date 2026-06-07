@@ -26,4 +26,13 @@ export class KnowledgeEngine {
     async searchKnowledge(collectionName, query, topK = 5) {
         return await this.vectorStore.search(collectionName, query, topK);
     }
+    async deleteDocument(collectionName, chunkId) {
+        await this.vectorStore.deleteDocuments(collectionName, [chunkId]);
+    }
+    async getCollectionStats(collectionName) {
+        return await this.vectorStore.getCollectionStats(collectionName);
+    }
+    async getAllDocuments(collectionName) {
+        return await this.vectorStore.getAllDocuments(collectionName);
+    }
 }

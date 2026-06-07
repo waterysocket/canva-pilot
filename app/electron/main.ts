@@ -8,6 +8,11 @@ import { KeyManager } from './src/main/security/KeyManager.js'
 import { ProviderManager } from './src/main/providers/ProviderManager.js'
 import { ProviderType } from './src/main/types/index.js'
 import { ExecutionMonitor } from './src/main/events/ExecutionMonitor.js'
+import { KnowledgeEngine } from './src/main/knowledge/KnowledgeEngine.js'
+import { DatabaseManager } from './src/main/database/DatabaseManager.js'
+import { TaskRepository } from './src/main/database/repositories/TaskRepository.js'
+import { chromium } from 'playwright-core'
+import { v4 as uuidv4 } from 'uuid'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -304,6 +309,127 @@ app.whenReady().then(() => {
     const providerManager = ProviderManager.getInstance();
     const p = providerManager.getReasoningProvider(provider as ProviderType);
     return await p.getModels();
+  });
+
+  ipcMain.handle('get-configured-models', async () => {
+    const providerManager = ProviderManager.getInstance();
+    const types: ProviderType[] = ['gemini', 'openai', 'claude', 'openrouter', 'ollama', 'groq'];
+    const configured = [];
+    for (const t of types) {
+      try {
+        const p = providerManager.getReasoningProvider(t);
+        if (await p.isConfigured()) {
+          const models = await p.getModels();
+          configured.push(...models);
+        }
+      } catch (e) {}
+    }
+    return configured;
+  });
+
+  ipcMain.handle('get-hardware-recommendations', async (event, sysInfo) => {
+    // Basic logic mapping sysInfo to models
+    const vramGB = sysInfo.vram.total;
+    const isLowEnd = sysInfo.ram.total < 16 && vramGB < 4;
+    
+    // Default standard set
+    let recommendations = [
+      { id: 'groq-llama3', name: 'Groq Llama 3 (Fastest)', type: 'reasoning', reason: 'Ultra-fast inference, perfect for planning.' },
+      { id: 'gpt-4o', name: 'GPT-4o (Vision)', type: 'vision', reason: 'Industry standard for visual UI analysis.' }
+    ];
+
+    if (vramGB >= 8) {
+      recommendations.push({ id: 'ollama-qwen2-vl', name: 'Local Qwen2-VL (Vision)', type: 'vision', reason: 'Detected 8GB+ VRAM. Excellent for local UI analysis.' });
+      recommendations.push({ id: 'ollama-llama3', name: 'Local Llama 3 (Reasoning)', type: 'reasoning', reason: 'Enough RAM/VRAM to run locally securely.' });
+    } else if (isLowEnd) {
+      recommendations.push({ id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Multimodal)', type: 'vision', reason: 'Cloud offloading recommended due to low system specs.' });
+    }
+
+    return recommendations;
+  });
+
+  ipcMain.handle('scrape-knowledge-source', async (event, url: string, collection: string) => {
+    try {
+      const browser = await chromium.launch({ headless: true });
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: 'networkidle' });
+      
+      // Basic text extraction
+      const content = await page.evaluate(() => document.body.innerText);
+      await browser.close();
+
+      const ke = KnowledgeEngine.getInstance();
+      const docId = uuidv4();
+      
+      await ke.ingestDocument(collection, {
+        id: docId,
+        contextPackId: 'canva-web',
+        title: await page.title() || url,
+        sourceUrl: url,
+        content: content.slice(0, 10000) // Truncate for simplicity
+      });
+
+      return { success: true, docId };
+    } catch (e: any) {
+      throw new Error(`Scraping failed: ${e.message}`);
+    }
+  });
+
+  ipcMain.handle('get-db-stats', async () => {
+    const dbPath = path.join(app.getPath('userData'), 'canvapilot.db');
+    const chromaPath = path.join(app.getPath('userData'), 'chroma');
+    
+    const dbManager = DatabaseManager.getInstance();
+    const taskRepo = new TaskRepository();
+    
+    // We would ideally count all tasks, for now we simulate returning total rows
+    const tasks = taskRepo.getAllTasks();
+    
+    const ke = KnowledgeEngine.getInstance();
+    const chromaStats = await ke.getCollectionStats('docs');
+
+    return {
+      sqlite: {
+        path: dbPath,
+        tasksCount: tasks.length
+      },
+      chroma: {
+        path: chromaPath,
+        vectorsCount: chromaStats.count
+      }
+    };
+  });
+
+  ipcMain.handle('get-tasks', async () => {
+    const taskRepo = new TaskRepository();
+    return taskRepo.getAllTasks();
+  });
+
+  ipcMain.handle('delete-document', async (event, collection: string, docId: string) => {
+    const ke = KnowledgeEngine.getInstance();
+    await ke.deleteDocument(collection, docId);
+    return true;
+  });
+
+  ipcMain.handle('get-documents', async (event, collection: string) => {
+    const ke = KnowledgeEngine.getInstance();
+    const docs = await ke.getAllDocuments(collection);
+    
+    // Map ChromaDB response to our frontend interface
+    const mappedDocs = [];
+    if (docs.ids && docs.ids.length > 0) {
+      for (let i = 0; i < docs.ids.length; i++) {
+        mappedDocs.push({
+          id: docs.ids[i],
+          title: docs.metadatas[i]?.title || 'Untitled',
+          source: docs.metadatas[i]?.sourceUrl || 'Unknown source',
+          chunkCount: 1,
+          dateAdded: new Date().toLocaleDateString(),
+          collection: collection
+        });
+      }
+    }
+    return mappedDocs;
   });
 
   // Bind ExecutionMonitor events to Window

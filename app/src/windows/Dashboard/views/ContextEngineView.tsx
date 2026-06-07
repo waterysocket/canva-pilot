@@ -184,72 +184,7 @@ function ActivePackCard({
   );
 }
 
-function ComingSoonCard({
-  pack,
-  index,
-}: {
-  pack: ContextPack;
-  index: number;
-}) {
-  const Icon = pack.icon;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 + index * 0.08 }}
-      className="p-5 rounded-xl border border-white/5 relative overflow-hidden group cursor-default"
-      style={{ background: 'rgba(255,255,255,0.015)' }}
-    >
-      {/* Lock overlay */}
-      <div className="absolute inset-0 bg-[#09090b]/40 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <Lock size={24} className="text-zinc-600" />
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 opacity-40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
-            <Icon size={18} className="text-zinc-500" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-zinc-400">{pack.name}</h3>
-            <span className="text-[10px] text-zinc-600">--</span>
-          </div>
-        </div>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest bg-white/5 text-zinc-500 border border-white/5">
-          <Lock size={8} />
-          Coming Soon
-        </span>
-      </div>
-
-      {/* Placeholder stats */}
-      <div className="space-y-2 mb-4 opacity-20">
-        <div className="flex justify-between">
-          <span className="text-[10px] text-zinc-600">Actions loaded</span>
-          <span className="text-xs text-zinc-600">--</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[10px] text-zinc-600">Workflows loaded</span>
-          <span className="text-xs text-zinc-600">--</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[10px] text-zinc-600">UI Maps loaded</span>
-          <span className="text-xs text-zinc-600">--</span>
-        </div>
-      </div>
-
-      <div className="h-px bg-white/5 mb-4" />
-
-      <div className="flex items-center justify-between opacity-30">
-        <span className="text-[10px] text-zinc-700">Last refreshed: --</span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-zinc-600 border border-white/5 cursor-not-allowed">
-          <Lock size={9} />
-          Locked
-        </span>
-      </div>
-    </motion.div>
-  );
-}
+// Removed ComingSoonCard component
 
 /* ------------------------------------------------------------------ */
 /*  Main Component                                                     */
@@ -281,7 +216,6 @@ export default function ContextEngineView() {
   }, []);
 
   const activePacks = packs.filter((p) => p.active);
-  const comingSoonPacks = packs.filter((p) => !p.active);
 
   return (
     <div className="p-8 h-full overflow-y-auto">
@@ -324,77 +258,42 @@ export default function ContextEngineView() {
             refreshing={refreshingId === pack.id}
           />
         ))}
-        {comingSoonPacks.map((pack, i) => (
-          <ComingSoonCard key={pack.id} pack={pack} index={i} />
-        ))}
       </div>
 
-      {/* Knowledge Collections */}
+      {/* Description Panel */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.35 }}
+        className="p-6 rounded-2xl border border-white/5"
+        style={{ background: 'rgba(255,255,255,0.02)' }}
       >
-        <div className="flex items-center gap-2 mb-4">
-          <Layers size={14} className="text-purple-400" />
-          <h2 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">
-            Knowledge Collections
-          </h2>
-          <div className="flex-1 h-px bg-gradient-to-r from-white/5 to-transparent ml-2" />
-        </div>
-
-        <div className="space-y-2">
-          {knowledge.map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.4 + i * 0.06 }}
-                className="group p-4 rounded-xl border border-white/5 flex items-center gap-4 transition-all duration-300 hover:border-purple-500/20 hover:shadow-[0_0_20px_rgba(124,58,237,0.06)]"
-                style={{ background: 'rgba(255,255,255,0.025)' }}
-              >
-                {/* Icon */}
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border border-purple-500/10 bg-purple-500/5">
-                  <Icon size={16} className="text-purple-400/80" />
-                </div>
-
-                {/* Name */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white group-hover:text-purple-200 transition-colors">
-                    {item.name}
-                  </p>
-                  <p className="text-[10px] text-zinc-600">
-                    {item.docCount} documents indexed
-                  </p>
-                </div>
-
-                {/* Ingest button */}
-                <button
-                  onClick={() => handleIngest(item.id)}
-                  disabled={item.ingesting}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest transition-all duration-300',
-                    'border border-white/10 text-zinc-400 hover:border-purple-500/30 hover:text-purple-300 hover:bg-purple-500/10',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                  )}
-                >
-                  {item.ingesting ? (
-                    <>
-                      <Sparkles size={10} className="animate-pulse text-purple-400" />
-                      Ingesting…
-                    </>
-                  ) : (
-                    <>
-                      <ArrowDownToLine size={10} />
-                      Ingest
-                    </>
-                  )}
-                </button>
-              </motion.div>
-            );
-          })}
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shrink-0">
+            <BookOpen className="text-purple-400" size={24} />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2">How the Context Engine Works</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-4">
+              The Context Engine is the brain behind CanvaPilot's software awareness. It injects specific knowledge about 
+              UI elements, workflows, and rules directly into the agent's prompt during execution. This allows the AI 
+              to understand complex interfaces without needing to guess.
+            </p>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+              To edit the current context, add custom rules, or ingest new documentation, head over to the Knowledge Base. 
+              The Knowledge Base connects directly to your local ChromaDB instance to manage embeddings.
+            </p>
+            <button
+              onClick={() => {
+                // Simulate nav to Knowledge Base. Realistically, we'd trigger an event or pass a prop
+                window.dispatchEvent(new CustomEvent('navigate', { detail: 'knowledge' }));
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium transition-colors"
+            >
+              <Database size={16} />
+              Go to Knowledge Base
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

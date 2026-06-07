@@ -38,4 +38,16 @@ export class KnowledgeEngine {
   public async searchKnowledge(collectionName: string, query: string, topK: number = 5): Promise<any> {
     return await this.vectorStore.search(collectionName, query, topK);
   }
+
+  public async deleteDocument(collectionName: string, chunkId: string): Promise<void> {
+    await this.vectorStore.deleteDocuments(collectionName, [chunkId]);
+  }
+
+  public async getCollectionStats(collectionName: string): Promise<{ count: number }> {
+    return await this.vectorStore.getCollectionStats(collectionName);
+  }
+
+  public async getAllDocuments(collectionName: string): Promise<any> {
+    return await this.vectorStore.getAllDocuments(collectionName);
+  }
 }

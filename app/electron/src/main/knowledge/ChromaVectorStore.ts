@@ -5,6 +5,8 @@ export interface VectorStore {
   search(collectionName: string, queryText: string, nResults: number): Promise<any>;
   deleteDocuments(collectionName: string, ids: string[]): Promise<void>;
   createCollection(name: string): Promise<void>;
+  getCollectionStats(name: string): Promise<{ count: number }>;
+  getAllDocuments(name: string): Promise<any>;
 }
 
 export class ChromaVectorStore implements VectorStore {
@@ -50,5 +52,25 @@ export class ChromaVectorStore implements VectorStore {
   async deleteDocuments(collectionName: string, ids: string[]): Promise<void> {
     const collection = await this.getCollection(collectionName);
     await collection.delete({ ids });
+  }
+
+  async getCollectionStats(name: string): Promise<{ count: number }> {
+    try {
+      const collection = await this.getCollection(name);
+      const count = await collection.count();
+      return { count };
+    } catch {
+      return { count: 0 };
+    }
+  }
+
+  async getAllDocuments(name: string): Promise<any> {
+    try {
+      const collection = await this.getCollection(name);
+      const res = await collection.get();
+      return res;
+    } catch {
+      return { ids: [], metadatas: [], documents: [] };
+    }
   }
 }

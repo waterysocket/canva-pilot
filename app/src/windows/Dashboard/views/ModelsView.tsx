@@ -29,6 +29,9 @@ interface ProviderConfig {
   gradient: string;
   glowColor: string;
   isLocal?: boolean;
+  apiKeyUrl?: string;
+  type: 'vision' | 'reasoning';
+  description: string;
 }
 
 interface ProviderState {
@@ -52,25 +55,44 @@ interface Toast {
 
 const PROVIDERS: ProviderConfig[] = [
   {
+    id: 'openai',
+    name: 'OpenAI (GPT-4o)',
+    icon: Brain,
+    gradient: 'from-green-400 to-emerald-500',
+    glowColor: 'shadow-green-500/20',
+    apiKeyUrl: 'https://platform.openai.com/api-keys',
+    type: 'vision',
+    description: 'Visual Analysis: Excels at "seeing" the screen and analyzing the UI structure.'
+  },
+  {
+    id: 'claude',
+    name: 'Anthropic (Claude 3.5)',
+    icon: MessageSquare,
+    gradient: 'from-orange-400 to-amber-500',
+    glowColor: 'shadow-orange-500/20',
+    apiKeyUrl: 'https://console.anthropic.com/settings/keys',
+    type: 'vision',
+    description: 'Visual Analysis: Top tier for reading code and analyzing complex visual interfaces.'
+  },
+  {
     id: 'gemini',
     name: 'Google Gemini',
     icon: Sparkles,
     gradient: 'from-blue-500 to-cyan-400',
     glowColor: 'shadow-blue-500/20',
+    apiKeyUrl: 'https://aistudio.google.com/app/apikey',
+    type: 'vision',
+    description: 'Visual Analysis: Very fast at processing multimodal input including video streams.'
   },
   {
-    id: 'openai',
-    name: 'OpenAI',
-    icon: Brain,
-    gradient: 'from-green-400 to-emerald-500',
-    glowColor: 'shadow-green-500/20',
-  },
-  {
-    id: 'claude',
-    name: 'Anthropic Claude',
-    icon: MessageSquare,
-    gradient: 'from-orange-400 to-amber-500',
-    glowColor: 'shadow-orange-500/20',
+    id: 'groq',
+    name: 'Groq (Llama-3)',
+    icon: Zap,
+    gradient: 'from-red-500 to-orange-500',
+    glowColor: 'shadow-red-500/20',
+    apiKeyUrl: 'https://console.groq.com/keys',
+    type: 'reasoning',
+    description: 'LLM Reasoning: Ultra-fast text inference. Perfect for planning and thinking steps.'
   },
   {
     id: 'openrouter',
@@ -78,6 +100,9 @@ const PROVIDERS: ProviderConfig[] = [
     icon: Globe,
     gradient: 'from-purple-500 to-pink-500',
     glowColor: 'shadow-purple-500/20',
+    apiKeyUrl: 'https://openrouter.ai/keys',
+    type: 'reasoning',
+    description: 'LLM Reasoning: Provides access to hundreds of reasoning models via one API.'
   },
   {
     id: 'ollama',
@@ -86,6 +111,8 @@ const PROVIDERS: ProviderConfig[] = [
     gradient: 'from-indigo-400 to-violet-500',
     glowColor: 'shadow-indigo-500/20',
     isLocal: true,
+    type: 'reasoning',
+    description: 'Local AI: Run reasoning models directly on your hardware securely. No cloud needed.'
   },
 ];
 
@@ -166,13 +193,14 @@ function ProviderCard({
               <Icon size={18} className="text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">{provider.name}</h3>
-              {provider.isLocal && (
-                <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
-                  <Server size={8} />
-                  Local AI
-                </span>
-              )}
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                {provider.name}
+                {provider.apiKeyUrl && (
+                  <a href={provider.apiKeyUrl} target="_blank" rel="noreferrer" className="text-[10px] text-purple-400 hover:text-purple-300 underline font-normal tracking-wide">
+                    Get API Key
+                  </a>
+                )}
+              </h3>
             </div>
           </div>
 
@@ -463,27 +491,77 @@ export default function ModelsView() {
         </div>
       </div>
 
-      {/* Provider Cards Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {PROVIDERS.map((provider, idx) => (
-          <motion.div
-            key={provider.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: idx * 0.08 }}
-          >
-            <ProviderCard
-              provider={provider}
-              state={providerStates[provider.id]}
-              onKeyChange={(val) => updateProvider(provider.id, { keyInput: val })}
-              onToggleShow={() =>
-                updateProvider(provider.id, { showKey: !providerStates[provider.id].showKey })
-              }
-              onSave={() => handleSaveKey(provider.id)}
-              onRefreshModels={() => fetchModels(provider.id)}
-            />
-          </motion.div>
-        ))}
+      {/* Provider Cards Grid - Grouped by Type */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        
+        {/* Vision Models */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+              <Eye size={14} />
+              Visual Analysis Models
+            </h2>
+            <p className="text-xs text-zinc-500 mt-1">
+              Visual models excel at "seeing" the screen, analyzing complex UI structures, and processing multimodal input like video streams or screenshots.
+            </p>
+          </div>
+          <div className="flex flex-col gap-4">
+            {PROVIDERS.filter(p => p.type === 'vision').map((provider, idx) => (
+              <motion.div
+                key={provider.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+              >
+                <ProviderCard
+                  provider={provider}
+                  state={providerStates[provider.id]}
+                  onKeyChange={(val) => updateProvider(provider.id, { keyInput: val })}
+                  onToggleShow={() =>
+                    updateProvider(provider.id, { showKey: !providerStates[provider.id].showKey })
+                  }
+                  onSave={() => handleSaveKey(provider.id)}
+                  onRefreshModels={() => fetchModels(provider.id)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Reasoning Models */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+              <Brain size={14} />
+              LLM Reasoning Models
+            </h2>
+            <p className="text-xs text-zinc-500 mt-1">
+              Reasoning models provide ultra-fast text inference, making them perfect for planning, thinking steps, and orchestrating complex automation logic securely.
+            </p>
+          </div>
+          <div className="flex flex-col gap-4">
+            {PROVIDERS.filter(p => p.type === 'reasoning').map((provider, idx) => (
+              <motion.div
+                key={provider.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+              >
+                <ProviderCard
+                  provider={provider}
+                  state={providerStates[provider.id]}
+                  onKeyChange={(val) => updateProvider(provider.id, { keyInput: val })}
+                  onToggleShow={() =>
+                    updateProvider(provider.id, { showKey: !providerStates[provider.id].showKey })
+                  }
+                  onSave={() => handleSaveKey(provider.id)}
+                  onRefreshModels={() => fetchModels(provider.id)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
       </div>
 
       {/* Toast container */}

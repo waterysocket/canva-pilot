@@ -5,6 +5,24 @@ const projects = ['CanvaPilot Demo', 'Figma Automation', 'Notion Sync', 'Jira Tr
 
 export default function DropdownWindow() {
   const [type, setType] = useState<'models' | 'projects' | null>(null);
+  const [dynamicModels, setDynamicModels] = useState<string[]>(models);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      const api = (window as any).electronAPI;
+      if (api) {
+        try {
+          const res = await api.invoke('get-configured-models');
+          if (res && res.length > 0) {
+            setDynamicModels(res);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+    fetchModels();
+  }, []);
 
   useEffect(() => {
     const api = (window as any).electronAPI;
@@ -41,7 +59,7 @@ export default function DropdownWindow() {
             <div className="px-3 py-1.5 border-b border-white/5">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Select Model</span>
             </div>
-            {models.map(m => (
+            {dynamicModels.map(m => (
               <button 
                 key={m} 
                 onClick={() => handleSelect(m)} 

@@ -2,6 +2,7 @@ import { GeminiProvider } from './gemini/GeminiProvider.js';
 import { OpenAIProvider } from './openai/OpenAIProvider.js';
 import { ClaudeProvider } from './claude/ClaudeProvider.js';
 import { OllamaProvider } from './ollama/OllamaProvider.js';
+import { GroqProvider } from './groq/GroqProvider.js';
 export class ProviderManager {
     static instance;
     reasoningProviders = new Map();
@@ -22,11 +23,14 @@ export class ProviderManager {
         const claude = new ClaudeProvider();
         // Local Providers
         const ollama = new OllamaProvider();
+        // Cloud Providers (Reasoning only)
+        const groq = new GroqProvider();
         // Reasoning
         this.reasoningProviders.set('gemini', gemini);
         this.reasoningProviders.set('openai', openai);
         this.reasoningProviders.set('claude', claude);
         this.reasoningProviders.set('ollama', ollama);
+        this.reasoningProviders.set('groq', groq);
         // Vision
         this.visionProviders.set('gemini', gemini);
         this.visionProviders.set('openai', openai);

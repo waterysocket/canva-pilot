@@ -225,7 +225,9 @@ function CollectionCard({ collection }: { collection: Collection }) {
   );
 }
 
-function DocumentRow({ doc }: { doc: Document }) {
+import { Trash2 } from 'lucide-react';
+
+function DocumentRow({ doc, onDelete }: { doc: Document; onDelete: (id: string, collection: string) => void }) {
   return (
     <motion.div
       variants={itemVariants}
@@ -259,10 +261,13 @@ function DocumentRow({ doc }: { doc: Document }) {
           <Clock size={10} />
           <span>{doc.dateAdded}</span>
         </div>
-        <ExternalLink
-          size={12}
-          className="text-zinc-700 group-hover:text-purple-400 transition-colors"
-        />
+        <button
+          onClick={() => onDelete(doc.id, doc.collection)}
+          className="p-1 rounded text-zinc-700 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          title="Delete Document"
+        >
+          <Trash2 size={12} />
+        </button>
       </div>
     </motion.div>
   );
@@ -272,17 +277,29 @@ function IngestPanel() {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<IngestStatus>('idle');
 
-  const handleIngest = () => {
+  const handleIngest = async () => {
     if (!url.trim()) return;
     setStatus('ingesting');
-    // Simulate ingest
+    
+    try {
+      const api = (window as any).electronAPI;
+      if (api) {
+        await api.invoke('scrape-knowledge-source', url, 'docs');
+        setStatus('success');
+      } else {
+        throw new Error('No API');
+      }
+    } catch (e) {
+      console.error(e);
+      setStatus('error');
+    }
+
     setTimeout(() => {
-      setStatus('success');
-      setTimeout(() => {
-        setStatus('idle');
-        setUrl('');
-      }, 2000);
-    }, 2500);
+      setStatus('idle');
+      setUrl('');
+      // Trigger a refresh event for the stats
+      window.dispatchEvent(new Event('knowledge-updated'));
+    }, 2000);
   };
 
   return (
@@ -310,7 +327,7 @@ function IngestPanel() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleIngest()}
-            placeholder="Paste URL or file path..."
+            placeholder="Paste URL (e.g., https://canva.dev/docs/)"
             className={cn(
               'w-full bg-white/[0.03] border border-white/5 rounded-xl pl-9 pr-4 py-2.5',
               'text-sm text-zinc-300 placeholder:text-zinc-600',
@@ -319,6 +336,10 @@ function IngestPanel() {
             )}
           />
         </div>
+
+        <p className="text-[10px] text-zinc-500 leading-relaxed px-1">
+          Provide a link to a documentation page, GitHub markdown file, or API reference. The system will launch a headless browser, scrape the content, and vectorize it into ChromaDB for semantic retrieval.
+        </p>
 
         {/* Action buttons */}
         <div className="flex items-center gap-3">
@@ -396,23 +417,68 @@ function IngestPanel() {
 
 export default function KnowledgeBaseView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState<any>(null);
+  const [realDocs, setRealDocs] = useState<Document[]>([]);
+
+  const fetchStats = async () => {
+    const api = (window as any).electronAPI;
+    if (api) {
+      try {
+        const resStats = await api.invoke('get-db-stats');
+        setStats(resStats);
+        
+        const docs = await api.invoke('get-documents', 'docs');
+        setRealDocs(docs || []);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const handleDeleteDoc = async (id: string, collection: string) => {
+    const api = (window as any).electronAPI;
+    if (api) {
+      await api.invoke('delete-document', collection, id);
+      fetchStats();
+    }
+  };
+
+  React.useEffect(() => {
+    fetchStats();
+    const handleUpdate = () => fetchStats();
+    window.addEventListener('knowledge-updated', handleUpdate);
+    return () => window.removeEventListener('knowledge-updated', handleUpdate);
+  }, []);
+
+  const dynamicCollections = useMemo(() => {
+    return collections.map(c => {
+      if (c.id === 'docs') {
+        return {
+          ...c,
+          documentCount: stats?.chroma?.vectorsCount || 0,
+          status: 'active' as const
+        };
+      }
+      return c;
+    });
+  }, [stats]);
 
   const filteredCollections = useMemo(
     () =>
-      collections.filter((c) =>
+      dynamicCollections.filter((c) =>
         c.name.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    [searchQuery],
+    [searchQuery, dynamicCollections],
   );
 
   const filteredDocuments = useMemo(
     () =>
-      documents.filter(
+      realDocs.filter(
         (d) =>
           d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           d.source.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    [searchQuery],
+    [searchQuery, realDocs],
   );
 
   return (
@@ -434,6 +500,11 @@ export default function KnowledgeBaseView() {
           <p className="text-sm text-zinc-500 mt-1">
             Manage your RAG collections and embedded documents
           </p>
+          {stats?.chroma?.path && (
+            <p className="text-[10px] font-mono text-zinc-600 mt-2">
+              Local Storage: {stats.chroma.path}
+            </p>
+          )}
         </div>
       </motion.div>
 
@@ -501,15 +572,17 @@ export default function KnowledgeBaseView() {
                 initial="hidden"
                 animate="visible"
               >
-                {filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((doc) => (
-                    <DocumentRow key={doc.id} doc={doc} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-sm text-zinc-600">
-                    No documents match "{searchQuery}"
-                  </div>
-                )}
+                <div className="flex flex-col">
+                  {filteredDocuments.length > 0 ? (
+                    filteredDocuments.map((doc) => (
+                      <DocumentRow key={doc.id} doc={doc} onDelete={handleDeleteDoc} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-sm text-zinc-600">
+                      No documents match "{searchQuery}"
+                    </div>
+                  )}
+                </div>
               </motion.div>
             </div>
           </div>

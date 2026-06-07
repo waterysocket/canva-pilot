@@ -37,4 +37,24 @@ export class ChromaVectorStore {
         const collection = await this.getCollection(collectionName);
         await collection.delete({ ids });
     }
+    async getCollectionStats(name) {
+        try {
+            const collection = await this.getCollection(name);
+            const count = await collection.count();
+            return { count };
+        }
+        catch {
+            return { count: 0 };
+        }
+    }
+    async getAllDocuments(name) {
+        try {
+            const collection = await this.getCollection(name);
+            const res = await collection.get();
+            return res;
+        }
+        catch {
+            return { ids: [], metadatas: [], documents: [] };
+        }
+    }
 }

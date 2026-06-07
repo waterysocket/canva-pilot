@@ -48,4 +48,20 @@ export class TaskRepository {
     `);
     stmt.run(status, id);
   }
+
+  public getAllTasks(): any[] {
+    const stmt = this.dbManager.getDb().prepare('SELECT * FROM tasks ORDER BY created_at DESC');
+    const rows = stmt.all() as any[];
+    
+    return rows.map(row => ({
+      id: row.id,
+      goal: row.goal,
+      status: row.status,
+      contextPackId: row.context_pack_id,
+      startedAt: new Date(row.created_at).getTime(),
+      durationMs: row.updated_at ? new Date(row.updated_at).getTime() - new Date(row.created_at).getTime() : 0,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at)
+    }));
+  }
 }

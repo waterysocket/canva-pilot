@@ -43,73 +43,35 @@ interface ActivityItem {
 /*  Mock data                                                          */
 /* ------------------------------------------------------------------ */
 
-const stats: StatCard[] = [
+const DEFAULT_STATS: StatCard[] = [
   {
     label: 'Tasks Completed',
-    value: 47,
+    value: 0,
     icon: CheckCircle2,
-    trend: { direction: 'up', value: '+12%' },
+    trend: { direction: 'up', value: '+0%' },
     accentFrom: 'from-purple-500',
     accentTo: 'to-blue-500',
   },
   {
-    label: 'Active Context Packs',
-    value: 5,
+    label: 'Knowledge Vectors',
+    value: 0,
     icon: Package,
     accentFrom: 'from-blue-500',
     accentTo: 'to-cyan-500',
   },
   {
     label: 'Models Available',
-    value: 8,
+    value: 0,
     icon: Cpu,
     accentFrom: 'from-purple-500',
     accentTo: 'to-pink-500',
   },
   {
     label: 'Uptime',
-    value: '4h 23m',
+    value: '...',
     icon: Clock,
     accentFrom: 'from-emerald-500',
     accentTo: 'to-teal-500',
-  },
-];
-
-const activities: ActivityItem[] = [
-  {
-    id: 1,
-    icon: Layers,
-    description: 'Context Pack refreshed — Canva Design Tokens',
-    timestamp: '2 min ago',
-    status: 'success',
-  },
-  {
-    id: 2,
-    icon: CheckCircle2,
-    description: 'Task completed: Export PPT presentation',
-    timestamp: '18 min ago',
-    status: 'success',
-  },
-  {
-    id: 3,
-    icon: Key,
-    description: 'API key updated for OpenAI provider',
-    timestamp: '1 hour ago',
-    status: 'info',
-  },
-  {
-    id: 4,
-    icon: Zap,
-    description: 'Workflow "Auto-resize assets" executed',
-    timestamp: '3 hours ago',
-    status: 'success',
-  },
-  {
-    id: 5,
-    icon: FileText,
-    description: 'Knowledge base ingested 12 new documents',
-    timestamp: '5 hours ago',
-    status: 'info',
   },
 ];
 
@@ -279,10 +241,58 @@ function ActivityRow({ item, index }: { item: ActivityItem; index: number }) {
 
 export default function DashboardOverview() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [liveStats, setLiveStats] = useState<StatCard[]>(DEFAULT_STATS);
+  const [liveActivities, setLiveActivities] = useState<ActivityItem[]>([]);
+  const startTime = React.useRef(Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const api = (window as any).electronAPI;
+      if (!api) return;
+      try {
+        const [tasks, dbStats, models] = await Promise.all([
+          api.invoke('get-tasks'),
+          api.invoke('get-db-stats'),
+          api.invoke('get-configured-models')
+        ]);
+        
+        // Compute uptime
+        const uptimeMs = Date.now() - startTime.current;
+        const uptimeMins = Math.floor(uptimeMs / 60000);
+        const uptimeHrs = Math.floor(uptimeMins / 60);
+        const uptimeStr = uptimeHrs > 0 ? `${uptimeHrs}h ${uptimeMins % 60}m` : `${uptimeMins}m`;
+
+        const completedTasks = tasks.filter((t: any) => t.status === 'completed').length;
+        
+        setLiveStats([
+          { ...DEFAULT_STATS[0], value: completedTasks },
+          { ...DEFAULT_STATS[1], value: dbStats?.chroma?.vectorsCount || 0 },
+          { ...DEFAULT_STATS[2], value: models.length },
+          { ...DEFAULT_STATS[3], value: uptimeStr }
+        ]);
+
+        const recentTasks = tasks.slice(0, 5).map((t: any) => ({
+          id: t.id,
+          icon: t.status === 'completed' ? CheckCircle2 : (t.status === 'failed' ? Zap : Activity),
+          description: `Task ${t.status}: ${t.goal}`,
+          timestamp: new Date(t.startedAt).toLocaleString(),
+          status: t.status === 'completed' ? 'success' : (t.status === 'failed' ? 'warning' : 'info')
+        }));
+        
+        setLiveActivities(recentTasks);
+      } catch(e) {
+        console.error(e);
+      }
+    };
+    
+    fetchData();
+    const interval = setInterval(fetchData, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   const greeting = (() => {
@@ -324,7 +334,7 @@ export default function DashboardOverview() {
 
       {/* ── Stats Row ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
+        {liveStats.map((stat, i) => (
           <StatCardComponent key={stat.label} stat={stat} index={i} />
         ))}
       </div>
@@ -356,9 +366,13 @@ export default function DashboardOverview() {
             animate="visible"
             className="divide-y divide-white/[0.03]"
           >
-            {activities.map((item, i) => (
-              <ActivityRow key={item.id} item={item} index={i} />
-            ))}
+            {liveActivities.length > 0 ? (
+              liveActivities.map((item, i) => (
+                <ActivityRow key={item.id} item={item} index={i} />
+              ))
+            ) : (
+              <div className="p-6 text-center text-zinc-500 text-sm">No recent activity</div>
+            )}
           </motion.div>
         </div>
       </motion.div>

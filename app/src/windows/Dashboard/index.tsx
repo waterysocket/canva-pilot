@@ -94,6 +94,7 @@ export default function DashboardWindow() {
   const [sysInfo, setSysInfo] = useState<SystemInfo | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [recommendedModels, setRecommendedModels] = useState<any[]>([]);
 
   const fetchInfo = useCallback(async (showSpinner = false) => {
     const api = (window as any).electronAPI;
@@ -103,6 +104,9 @@ export default function DashboardWindow() {
       const data = await api.getSystemInfo();
       setSysInfo(data);
       setLastUpdated(new Date());
+
+      const recommendations = await api.invoke('get-hardware-recommendations', data);
+      setRecommendedModels(recommendations || []);
     } catch (e) {
       console.error('Failed to fetch system info', e);
     } finally {
@@ -263,6 +267,35 @@ export default function DashboardWindow() {
                   </div>
                 }
               />
+
+              {/* Compatible Models */}
+              <div className="mt-6 pt-6 border-t border-white/5">
+                <h4 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <MonitorDot size={12} className="text-purple-400" />
+                  Compatible Models
+                </h4>
+                {recommendedModels.length > 0 ? (
+                  <div className="space-y-2">
+                    {recommendedModels.map((model, idx) => (
+                      <div key={idx} className="p-3 rounded-xl border border-white/5 bg-white/[0.015] hover:bg-white/[0.03] transition-colors">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-xs font-semibold text-white">{model.name || model.id}</span>
+                          <span className={cn('text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase', model.type === 'vision' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400')}>
+                            {model.type}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 leading-tight">
+                          {model.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-zinc-500 italic p-3 rounded-xl border border-white/5 bg-white/[0.01]">
+                    Connect a remote LLM to view system compatible models
+                  </div>
+                )}
+              </div>
 
             </div>
           )}

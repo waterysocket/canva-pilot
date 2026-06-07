@@ -45,41 +45,6 @@ interface HistoryTask {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock history data                                                   */
-/* ------------------------------------------------------------------ */
-
-const MOCK_HISTORY: HistoryTask[] = [
-  {
-    id: 'h1',
-    goal: 'Resize all social media banners to 1080×1350',
-    status: 'completed',
-    timestamp: 'Today, 2:34 PM',
-    duration: '1m 12s',
-  },
-  {
-    id: 'h2',
-    goal: 'Generate brand color palette from uploaded logo',
-    status: 'completed',
-    timestamp: 'Today, 1:08 PM',
-    duration: '0m 47s',
-  },
-  {
-    id: 'h3',
-    goal: 'Export presentation slides as PNG sequence',
-    status: 'failed',
-    timestamp: 'Today, 11:52 AM',
-    duration: '2m 03s',
-  },
-  {
-    id: 'h4',
-    goal: 'Apply brand template to 12 product cards',
-    status: 'completed',
-    timestamp: 'Yesterday, 5:19 PM',
-    duration: '3m 28s',
-  },
-];
-
-/* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -179,7 +144,7 @@ function StatCard({
 
 export default function ExecutionMonitorView() {
   const [activeTask, setActiveTask] = useState<ActiveTask | null>(null);
-  const [history] = useState<HistoryTask[]>(MOCK_HISTORY);
+  const [history, setHistory] = useState<HistoryTask[]>([]);
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -246,19 +211,41 @@ export default function ExecutionMonitorView() {
     if (api?.onTaskEvent) {
       api.onTaskEvent(handleTaskEvent);
     }
+    
+    // Fetch history
+    if (api) {
+      api.invoke('get-tasks').then((tasks: any[]) => {
+        if (tasks && tasks.length > 0) {
+          const mapped: HistoryTask[] = tasks.map((t: any) => ({
+            id: t.id.toString(),
+            goal: t.goal,
+            status: t.status,
+            timestamp: new Date(t.startedAt).toLocaleString(),
+            duration: t.durationMs ? formatElapsed(t.durationMs) : '--'
+          }));
+          setHistory(mapped.reverse());
+        }
+      }).catch(console.error);
+    }
   }, [handleTaskEvent]);
 
   /* ---- Derived stats ---- */
-  const tasksToday = history.filter((t) =>
-    t.timestamp.startsWith('Today'),
-  ).length;
-  const completedToday = history.filter(
-    (t) => t.timestamp.startsWith('Today') && t.status === 'completed',
-  ).length;
+  const tasksToday = history.filter((t) => {
+    const d = new Date(t.timestamp);
+    const today = new Date();
+    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+  }).length;
+  
+  const completedToday = history.filter((t) => {
+    const d = new Date(t.timestamp);
+    const today = new Date();
+    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear() && t.status === 'completed';
+  }).length;
+
   const successRate =
     tasksToday > 0 ? `${Math.round((completedToday / tasksToday) * 100)}%` : '--';
   const avgDuration =
-    tasksToday > 0 ? '1m 21s' : '--'; // simplified mock
+    tasksToday > 0 ? '--' : '--'; // We can calculate real avg duration if needed
 
   return (
     <div className="p-8 h-full overflow-y-auto">
@@ -410,8 +397,8 @@ export default function ExecutionMonitorView() {
 
         <div className="space-y-2">
           {history.map((task, i) => {
-            const cfg = STATUS_CONFIG[task.status];
-            const StatusIcon = cfg.icon;
+            const cfg = STATUS_CONFIG[task.status] || STATUS_CONFIG['pending'];
+            const StatusIcon = cfg.icon || Clock;
             return (
               <motion.div
                 key={task.id}

@@ -1,4 +1,4 @@
-export type ProviderType = 'gemini' | 'openai' | 'claude' | 'openrouter' | 'ollama';
+export type ProviderType = 'gemini' | 'openai' | 'claude' | 'openrouter' | 'ollama' | 'groq';
 export type ModelCapability = 'reasoning' | 'vision' | 'multimodal';
 
 export interface Model {
