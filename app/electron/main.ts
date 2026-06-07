@@ -10,11 +10,18 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 // Hot-reload in dev: restarts electron when compiled output changes
 if (isDev) {
   const require = createRequire(import.meta.url);
-  require('electron-reload')(__dirname, {
-    electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
-    hardResetMethod: 'exit',
-    watched: [path.join(__dirname, 'main.js')],
-  });
+  try {
+    const electronBin = process.platform === 'win32'
+      ? path.join(__dirname, '..', 'node_modules', '.bin', 'electron.cmd')
+      : path.join(__dirname, '..', 'node_modules', '.bin', 'electron');
+    require('electron-reload')(__dirname, {
+      electron: electronBin,
+      hardResetMethod: 'exit',
+      watched: [path.join(__dirname, 'main.js')],
+    });
+  } catch (e) {
+    console.warn('electron-reload not available:', e);
+  }
 }
 
 let commandBarWindow: BrowserWindow | null = null;
