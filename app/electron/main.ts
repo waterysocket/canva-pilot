@@ -66,6 +66,7 @@ function createDashboard() {
     : `file://${path.join(__dirname, '../dist/index.html')}#/dashboard`;
 
   dashboardWindow.loadURL(startUrl);
+  dashboardWindow.maximize();
   
   dashboardWindow.on('closed', () => {
     dashboardWindow = null;

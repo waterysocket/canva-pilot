@@ -58,7 +58,7 @@ export default function CommandBarWindow() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-screen w-full bg-zinc-900 border border-white/20 rounded-xl overflow-hidden shadow-2xl">
       <div className="flex items-center p-3 gap-3 border-b border-white/5" style={{ WebkitAppRegion: 'drag' } as any}>
         <div className="flex-1 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
           {/* Project Selector */}
