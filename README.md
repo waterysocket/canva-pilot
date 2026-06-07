@@ -59,7 +59,6 @@ This will:
 ---
 
 ## 🌐 Ports & How to Change Them
-## 🌐 Ports & How to Change Them
 | Service | Default Port | How to Change |
 | ------- | ------------ | ------------- |
 | Vite dev server | **5173** | Set `VITE_PORT` in a `.env` file or edit `vite.config.ts` → `server.port`.
