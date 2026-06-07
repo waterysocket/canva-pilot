@@ -317,14 +317,23 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-configured-models', async () => {
     const providerManager = ProviderManager.getInstance();
-    const types: ProviderType[] = ['gemini', 'openai', 'claude', 'openrouter', 'ollama', 'groq'];
-    const configured = [];
-    for (const t of types) {
+    const providerMeta: { id: ProviderType; label: string; isPaid: boolean }[] = [
+      { id: 'openai',     label: 'OpenAI',      isPaid: true  },
+      { id: 'claude',     label: 'Anthropic',   isPaid: true  },
+      { id: 'gemini',     label: 'Google',      isPaid: true  },
+      { id: 'groq',       label: 'Groq',        isPaid: true  },
+      { id: 'openrouter', label: 'OpenRouter',  isPaid: true  },
+      { id: 'ollama',     label: 'Ollama',      isPaid: false },
+    ];
+    const configured: { id: string; label: string; provider: string; isPaid: boolean }[] = [];
+    for (const meta of providerMeta) {
       try {
-        const p = providerManager.getReasoningProvider(t);
+        const p = providerManager.getReasoningProvider(meta.id);
         if (await p.isConfigured()) {
           const models = await p.getModels();
-          configured.push(...models);
+          for (const m of models) {
+            configured.push({ id: m, label: m, provider: meta.label, isPaid: meta.isPaid });
+          }
         }
       } catch (e) {}
     }

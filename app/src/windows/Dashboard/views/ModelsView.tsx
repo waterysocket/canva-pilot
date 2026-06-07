@@ -56,7 +56,7 @@ interface Toast {
 const PROVIDERS: ProviderConfig[] = [
   {
     id: 'openai',
-    name: 'OpenAI (GPT-4o)',
+    name: 'OpenAI',
     icon: Brain,
     gradient: 'from-green-400 to-emerald-500',
     glowColor: 'shadow-green-500/20',
@@ -66,7 +66,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'claude',
-    name: 'Anthropic (Claude 3.5)',
+    name: 'Anthropic',
     icon: MessageSquare,
     gradient: 'from-orange-400 to-amber-500',
     glowColor: 'shadow-orange-500/20',
@@ -76,7 +76,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'gemini',
-    name: 'Google Gemini',
+    name: 'Google',
     icon: Sparkles,
     gradient: 'from-blue-500 to-cyan-400',
     glowColor: 'shadow-blue-500/20',
@@ -86,7 +86,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'groq',
-    name: 'Groq (Llama-3)',
+    name: 'Groq',
     icon: Zap,
     gradient: 'from-red-500 to-orange-500',
     glowColor: 'shadow-red-500/20',
