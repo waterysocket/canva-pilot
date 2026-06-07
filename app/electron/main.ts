@@ -389,6 +389,7 @@ app.whenReady().then(() => {
     
     let tasksCount = 0;
     let vectorsCount = 0;
+    const collectionsCount: Record<string, number> = { docs: 0, tutorials: 0, workflows: 0, rules: 0 };
 
     try {
       const taskRepo = new TaskRepository();
@@ -400,8 +401,15 @@ app.whenReady().then(() => {
 
     try {
       const ke = KnowledgeEngine.getInstance();
-      const chromaStats = await ke.getCollectionStats('docs');
-      vectorsCount = chromaStats?.count || 0;
+      for (const col of Object.keys(collectionsCount)) {
+        try {
+          const stats = await ke.getCollectionStats(col);
+          collectionsCount[col] = stats?.count || 0;
+          vectorsCount += collectionsCount[col];
+        } catch (e) {
+          // collection might not exist yet
+        }
+      }
     } catch (e) {
       console.warn('get-db-stats: failed to read chroma stats', e);
     }
@@ -413,7 +421,8 @@ app.whenReady().then(() => {
       },
       chroma: {
         path: chromaPath,
-        vectorsCount
+        vectorsCount,
+        collectionsCount
       }
     };
   });

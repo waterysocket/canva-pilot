@@ -456,14 +456,12 @@ export default function KnowledgeBaseView() {
 
   const dynamicCollections = useMemo(() => {
     return collections.map(c => {
-      if (c.id === 'docs') {
-        return {
-          ...c,
-          documentCount: stats?.chroma?.vectorsCount || 0,
-          status: 'active' as const
-        };
-      }
-      return c;
+      const count = stats?.chroma?.collectionsCount?.[c.id] || 0;
+      return {
+        ...c,
+        documentCount: count,
+        status: count > 0 ? 'active' as const : 'stale' as const
+      };
     });
   }, [stats]);
 
@@ -475,15 +473,20 @@ export default function KnowledgeBaseView() {
     [searchQuery, dynamicCollections],
   );
 
-  const filteredDocuments = useMemo(
-    () =>
-      realDocs.filter(
-        (d) =>
-          d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.source.toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    [searchQuery, realDocs],
-  );
+  const displayDocuments = useMemo(() => {
+    // Use real docs from ChromaDB if available, otherwise fall back to mock data for the active collection
+    const source = realDocs.length > 0
+      ? realDocs
+      : documents.filter(d => d.collection === activeCollection);
+
+    return source.filter(
+      (d) =>
+        d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.source.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [searchQuery, realDocs, activeCollection]);
+
+  const activeCollectionName = collections.find(c => c.id === activeCollection)?.name || 'Documents';
 
   return (
     <motion.div
@@ -567,7 +570,7 @@ export default function KnowledgeBaseView() {
           {/* Document List */}
           <div>
             <h2 className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-3">
-              Documents
+              Documents — <span className="text-purple-400">{activeCollectionName}</span>
             </h2>
             <div
               className="rounded-2xl border border-white/5 overflow-hidden"
@@ -577,15 +580,18 @@ export default function KnowledgeBaseView() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
+                key={activeCollection}
               >
                 <div className="flex flex-col">
-                  {filteredDocuments.length > 0 ? (
-                    filteredDocuments.map((doc) => (
+                  {displayDocuments.length > 0 ? (
+                    displayDocuments.map((doc) => (
                       <DocumentRow key={doc.id} doc={doc} onDelete={handleDeleteDoc} />
                     ))
                   ) : (
                     <div className="text-center py-8 text-sm text-zinc-600">
-                      No documents match "{searchQuery}"
+                      {searchQuery
+                        ? `No documents match "${searchQuery}"`
+                        : `No documents in ${activeCollectionName} yet. Use the ingest panel to add some.`}
                     </div>
                   )}
                 </div>
