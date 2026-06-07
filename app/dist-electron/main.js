@@ -85,19 +85,17 @@ app.whenReady().then(() => {
     // Temporarily expand the window so dropdowns aren't clipped
     ipcMain.on('expand-for-dropdown', () => {
         if (commandBarWindow) {
-            const [, currentH] = commandBarWindow.getSize();
-            if (currentH <= 95) {
-                // Store base size and expand down
-                const { y } = commandBarWindow.getBounds();
-                commandBarWindow.setBounds({ y, height: 290 }, true);
+            const bounds = commandBarWindow.getBounds();
+            if (bounds.height <= 95) {
+                commandBarWindow.setBounds({ ...bounds, height: 290 }, true);
             }
         }
     });
     ipcMain.on('collapse-dropdown', () => {
         if (commandBarWindow) {
-            const [, currentH] = commandBarWindow.getSize();
-            if (currentH <= 290) {
-                commandBarWindow.setSize(700, 95, true);
+            const bounds = commandBarWindow.getBounds();
+            if (bounds.height <= 290) {
+                commandBarWindow.setBounds({ ...bounds, height: 95 }, true);
             }
         }
     });
