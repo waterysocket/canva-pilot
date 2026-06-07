@@ -28,6 +28,11 @@ function createDropdownWindow() {
         ? 'http://localhost:5173#/dropdown'
         : `file://${path.join(__dirname, '../dist/index.html')}#/dropdown`;
     dropdownWindow.loadURL(startUrl);
+    dropdownWindow.on('hide', () => {
+        if (commandBarWindow) {
+            commandBarWindow.webContents.send('on-dropdown-closed');
+        }
+    });
     dropdownWindow.on('blur', () => {
         dropdownWindow?.hide();
     });

@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   dropdownSelect: (params: { type: string, value: string }) => ipcRenderer.send('dropdown-select', params),
   onDropdownData: (callback: (event: any, data: { type: string }) => void) => ipcRenderer.on('on-dropdown-data', callback),
   onDropdownSelected: (callback: (event: any, data: { type: string, value: string }) => void) => ipcRenderer.on('on-dropdown-selected', callback),
+  onDropdownClosed: (callback: () => void) => ipcRenderer.on('on-dropdown-closed', callback),
 
   onDashboardOpened: (callback: () => void) => ipcRenderer.on('dashboard-opened', callback),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),

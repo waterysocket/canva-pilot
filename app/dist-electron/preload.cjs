@@ -14,6 +14,7 @@ electron_1.contextBridge.exposeInMainWorld('electronAPI', {
     dropdownSelect: (params) => electron_1.ipcRenderer.send('dropdown-select', params),
     onDropdownData: (callback) => electron_1.ipcRenderer.on('on-dropdown-data', callback),
     onDropdownSelected: (callback) => electron_1.ipcRenderer.on('on-dropdown-selected', callback),
+    onDropdownClosed: (callback) => electron_1.ipcRenderer.on('on-dropdown-closed', callback),
     onDashboardOpened: (callback) => electron_1.ipcRenderer.on('dashboard-opened', callback),
     getSystemInfo: () => electron_1.ipcRenderer.invoke('get-system-info'),
 });

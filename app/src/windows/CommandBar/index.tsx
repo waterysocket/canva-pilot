@@ -10,6 +10,7 @@ export default function CommandBarWindow() {
   const { isProcessing, setProcessing, setStage, setProgress, addMessage } = useAgentStore();
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState('');
+  const [openDropdownType, setOpenDropdownType] = useState<'models' | 'projects' | null>(null);
 
   const api = () => (window as any).electronAPI;
 
@@ -20,12 +21,24 @@ export default function CommandBarWindow() {
     const handleSelect = (event: any, data: { type: string, value: string }) => {
       if (data.type === 'models') setCurrentModel(data.value);
       if (data.type === 'projects') setCurrentProject(data.value);
+      setOpenDropdownType(null);
     };
 
     electronAPI.onDropdownSelected(handleSelect);
+    
+    electronAPI.onDropdownClosed(() => {
+      setOpenDropdownType(null);
+    });
   }, []);
 
-  const openDropdown = (e: React.MouseEvent, type: 'models' | 'projects', width: number) => {
+  const toggleDropdown = (e: React.MouseEvent, type: 'models' | 'projects', width: number) => {
+    if (openDropdownType === type) {
+      api()?.hideDropdown();
+      setOpenDropdownType(null);
+      return;
+    }
+
+    setOpenDropdownType(type);
     const rect = e.currentTarget.getBoundingClientRect();
     api()?.showDropdown({
       type,
@@ -131,32 +144,27 @@ export default function CommandBarWindow() {
         {/* Project selector — left */}
         <div className="flex-1 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
           <button 
-            onClick={(e) => openDropdown(e, 'projects', 200)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-xs text-zinc-500 transition-colors"
+            onClick={(e) => toggleDropdown(e, 'projects', 200)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors ${openDropdownType === 'projects' ? 'bg-white/10 text-zinc-300' : 'hover:bg-white/5 text-zinc-500'}`}
           >
             <Folder size={11} className="text-purple-500/70" />
             {currentProject}
-            <ChevronDown size={10} />
+            <ChevronDown size={10} className={`transition-transform ${openDropdownType === 'projects' ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
         {/* Model selector — right, highlighted pill with coding font */}
         <div style={{ WebkitAppRegion: 'no-drag' } as any}>
           <button 
-            onClick={(e) => openDropdown(e, 'models', 220)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all border border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/10"
-            style={{ 
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(37,99,235,0.08) 100%)'
-            }}
+            onClick={(e) => toggleDropdown(e, 'models', 220)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all border ${openDropdownType === 'models' ? 'border-purple-500/60 bg-purple-500/20' : 'border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/10'}`}
+            style={{ background: openDropdownType === 'models' ? '' : 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(37,99,235,0.08) 100%)' }}
           >
             <Sparkles size={10} className="text-blue-400" />
-            <span 
-              className="text-[11px] font-medium text-purple-300"
-              style={{ fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace' }}
-            >
+            <span className="text-[11px] font-medium text-purple-300" style={{ fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace' }}>
               {currentModel}
             </span>
-            <ChevronDown size={10} className="text-purple-400/60" />
+            <ChevronDown size={10} className={`text-purple-400/60 transition-transform ${openDropdownType === 'models' ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>

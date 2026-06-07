@@ -34,6 +34,12 @@ function createDropdownWindow() {
 
   dropdownWindow.loadURL(startUrl);
 
+  dropdownWindow.on('hide', () => {
+    if (commandBarWindow) {
+      commandBarWindow.webContents.send('on-dropdown-closed');
+    }
+  });
+
   dropdownWindow.on('blur', () => {
     dropdownWindow?.hide();
   });
