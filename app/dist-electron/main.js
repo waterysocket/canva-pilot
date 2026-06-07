@@ -97,6 +97,9 @@ function createDashboard() {
     const startUrl = isDev
         ? 'http://localhost:5173#/dashboard'
         : `file://${path.join(__dirname, '../dist/index.html')}#/dashboard`;
+    dashboardWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+        console.log(`[Frontend] ${message} (at ${sourceId}:${line})`);
+    });
     dashboardWindow.loadURL(startUrl);
     dashboardWindow.once('ready-to-show', () => {
         dashboardWindow?.maximize();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import { Cpu, MemoryStick, MonitorDot, HardDrive, RefreshCw, AlertTriangle } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 // View components
 import DashboardOverview from './views/DashboardOverview';
@@ -78,7 +79,8 @@ function getStatusColor(percent: number) {
   return '#f97316';
 }
 
-function truncateModel(model: string, max = 26) {
+function truncateModel(model: string | undefined | null, max = 26) {
+  if (!model) return 'Unknown';
   return model.length > max ? model.slice(0, max) + '…' : model;
 }
 
