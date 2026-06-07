@@ -70,7 +70,7 @@ export default function CommandBarWindow() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full rounded-xl p-[1px] shadow-2xl"
+      className="flex flex-col h-screen w-full rounded-xl p-[1px] pb-[6px] shadow-2xl"
       style={{ 
         background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #7c3aed 100%)',
         boxShadow: '0 0 30px rgba(124, 58, 237, 0.25), 0 0 60px rgba(37, 99, 235, 0.15)'
