@@ -30,7 +30,7 @@ npm install
 ### Run the development server (Vite)
 ```powershell
 # Run the Vite development server (default http://localhost:5173)
-npm run dev
+npm run dev:electron
 ```
 The UI will hot‑reload as you edit source files.
 
