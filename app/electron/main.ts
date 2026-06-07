@@ -48,9 +48,11 @@ function createDashboard() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
+    show: false,
+    backgroundColor: '#09090b', // Force opaque dark background
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#0f0f13',
+      color: '#09090b',
       symbolColor: '#74b1be',
       height: 40
     },
@@ -66,7 +68,11 @@ function createDashboard() {
     : `file://${path.join(__dirname, '../dist/index.html')}#/dashboard`;
 
   dashboardWindow.loadURL(startUrl);
-  dashboardWindow.maximize();
+
+  dashboardWindow.once('ready-to-show', () => {
+    dashboardWindow?.maximize();
+    dashboardWindow?.show();
+  });
   
   dashboardWindow.on('closed', () => {
     dashboardWindow = null;
