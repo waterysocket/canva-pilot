@@ -20,30 +20,35 @@ A **open‑source** AI‑augmented design assistant built with **React, TypeScri
 - **Python 3.10+** (only required for custom providers, not needed for the core app).
 
 ### Install dependencies
-```bash
+```powershell
+# Clone the repository and install dependencies
 git clone https://github.com/waterysocket/canva-pilot.git
-cd canva-pilot
+Set-Location canva-pilot
 npm install
 ```
 
 ### Run the development server (Vite)
-```bash
-npm run dev   # Vite runs on http://localhost:5173 by default
+```powershell
+# Run the Vite development server (default http://localhost:5173)
+npm run dev
 ```
 The UI will hot‑reload as you edit source files.
 
 ### Start ChromaDB (vector store)
 We ship a Docker compose snippet that starts a local ChromaDB instance on **port 8000**:
-```bash
-docker run -d \
-  -p 8000:8000 \
-  -v $(pwd)/chroma-data:/chroma \
+```powershell
+# Start ChromaDB (vector store) on port 8000
+docker run -d `
+  -p 8000:8000 `
+  -v $(pwd)/chroma-data:/chroma `
   ghcr.io/chroma-core/chroma:latest
 ```
+
 If you prefer a manual install, see the [ChromaDB docs](https://www.trychroma.com/docs).
 
 ### Launch the Electron app (desktop)
-```bash
+```powershell
+# Launch the Electron desktop app
 npm run dev:electron
 ```
 This will:
