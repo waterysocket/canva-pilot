@@ -1,10 +1,16 @@
+import { KeyManager } from '../../security/KeyManager.js';
 export class OllamaProvider {
     id = 'ollama';
     name = 'Ollama Local AI';
-    baseUrl = 'http://localhost:11434';
+    defaultBaseUrl = 'http://localhost:11434';
+    async getBaseUrl() {
+        const key = await KeyManager.getApiKey(this.id);
+        return key ?? this.defaultBaseUrl;
+    }
     async isConfigured() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/version`);
+            const baseUrl = await this.getBaseUrl();
+            const response = await fetch(`${baseUrl}/api/version`);
             return response.ok;
         }
         catch {
@@ -13,7 +19,8 @@ export class OllamaProvider {
     }
     async getModels() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/tags`);
+            const baseUrl = await this.getBaseUrl();
+            const response = await fetch(`${baseUrl}/api/tags`);
             const data = await response.json();
             return data.models.map((m) => ({
                 id: m.name,

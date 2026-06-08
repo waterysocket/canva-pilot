@@ -1,13 +1,20 @@
 import { ReasoningProvider, VisionProvider, Model, Plan, VisionResult } from '../../types/index.js';
+import { KeyManager } from '../../security/KeyManager.js';
 
 export class OllamaProvider implements ReasoningProvider, VisionProvider {
   id = 'ollama' as const;
   name = 'Ollama Local AI';
-  private baseUrl = 'http://localhost:11434';
+  private readonly defaultBaseUrl = 'http://localhost:11434';
+
+  private async getBaseUrl(): Promise<string> {
+    const key = await KeyManager.getApiKey(this.id);
+    return key ?? this.defaultBaseUrl;
+  }
 
   async isConfigured(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/version`);
+      const baseUrl = await this.getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/version`);
       return response.ok;
     } catch {
       return false;
@@ -16,7 +23,8 @@ export class OllamaProvider implements ReasoningProvider, VisionProvider {
 
   async getModels(): Promise<Model[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const baseUrl = await this.getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/tags`);
       const data = await response.json();
       return data.models.map((m: any) => ({
         id: m.name,

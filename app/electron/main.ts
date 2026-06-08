@@ -332,7 +332,7 @@ app.whenReady().then(() => {
         if (await p.isConfigured()) {
           const models = await p.getModels();
           for (const m of models) {
-            configured.push({ id: m, label: m, provider: meta.label, isPaid: meta.isPaid });
+            configured.push({ id: m.id, label: m.name, provider: meta.label, isPaid: meta.isPaid });
           }
         }
       } catch (e) {}
