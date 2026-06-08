@@ -15,6 +15,12 @@ import {
   Key,
   Zap,
   Layers,
+  Brain,
+  Sparkles,
+  Plug,
+  PlugZap,
+  Link,
+  Link2,
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
@@ -235,6 +241,51 @@ function ActivityRow({ item, index }: { item: ActivityItem; index: number }) {
   );
 }
 
+interface ConnectedModel {
+  id: string;
+  name: string;
+  provider: string;
+  type: 'reasoning' | 'vision';
+}
+
+function ModelStatusBadge({ model }: { model: ConnectedModel }) {
+  const Icon = model.type === 'reasoning' ? Brain : Eye;
+  const gradient = model.type === 'reasoning' 
+    ? 'from-purple-500 to-blue-500' 
+    : 'from-cyan-500 to-emerald-500';
+  
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/5 transition-all hover:border-purple-500/30 hover:bg-purple-500/5">
+      <div className={cn('w-6 h-6 rounded-md bg-gradient-to-br flex items-center justify-center', gradient)}>
+        <Icon size={12} className="text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] text-zinc-500 uppercase tracking-wider">{model.provider}</div>
+        <div className="text-xs text-zinc-300 font-medium truncate">{model.name}</div>
+      </div>
+      <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-sm shadow-green-400/50" />
+    </div>
+  );
+}
+
+function EmptyModelBadge({ type }: { type: 'reasoning' | 'vision' }) {
+  const Icon = type === 'reasoning' ? Brain : Eye;
+  const label = type === 'reasoning' ? 'LLM' : 'Vision';
+  
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-zinc-700/50 transition-all hover:border-purple-500/30 hover:bg-purple-500/5">
+      <div className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center">
+        <Icon size={12} className="text-zinc-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</div>
+        <div className="text-xs text-zinc-500 font-medium">Connect a model</div>
+      </div>
+      <PlugZap size={12} className="text-zinc-600" />
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
@@ -243,6 +294,7 @@ export default function DashboardOverview() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [liveStats, setLiveStats] = useState<StatCard[]>(DEFAULT_STATS);
   const [liveActivities, setLiveActivities] = useState<ActivityItem[]>([]);
+  const [configuredModels, setConfiguredModels] = useState<ConnectedModel[]>([]);
   const startTime = React.useRef(Date.now());
 
   useEffect(() => {
@@ -279,6 +331,17 @@ export default function DashboardOverview() {
           { ...DEFAULT_STATS[2], value: Array.isArray(models) ? models.length : 0 },
           { ...DEFAULT_STATS[3], value: uptimeStr }
         ]);
+
+        // Map configured models for display
+        const mappedModels: ConnectedModel[] = Array.isArray(models) 
+          ? models.map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              provider: m.provider,
+              type: m.provider.toLowerCase().includes('ollama') ? 'vision' as const : 'reasoning' as const
+            }))
+          : [];
+        setConfiguredModels(mappedModels);
 
         const taskArr = Array.isArray(tasks) ? tasks : [];
         const recentTasks = taskArr.slice(0, 5).map((t: any) => ({
@@ -343,6 +406,46 @@ export default function DashboardOverview() {
           <StatCardComponent key={stat.label} stat={stat} index={i} />
         ))}
       </div>
+
+      {/* ── Connected Models Status ────────────────────────────────── */}
+      <motion.div variants={itemVariants}>
+        <h2 className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-3">
+          Connected Models
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* LLM / Reasoning Models */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain size={12} className="text-purple-400" />
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500">LLM Reasoning</span>
+            </div>
+            {configuredModels.filter(m => m.type === 'reasoning').length > 0 ? (
+              configuredModels
+                .filter(m => m.type === 'reasoning')
+                .slice(0, 2)
+                .map(model => <ModelStatusBadge key={model.id} model={model} />)
+            ) : (
+              <EmptyModelBadge type="reasoning" />
+            )}
+          </div>
+
+          {/* Vision Models */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Eye size={12} className="text-cyan-400" />
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500">Visual Analysis</span>
+            </div>
+            {configuredModels.filter(m => m.type === 'vision').length > 0 ? (
+              configuredModels
+                .filter(m => m.type === 'vision')
+                .slice(0, 2)
+                .map(model => <ModelStatusBadge key={model.id} model={model} />)
+            ) : (
+              <EmptyModelBadge type="vision" />
+            )}
+          </div>
+        </div>
+      </motion.div>
 
       {/* ── Quick Actions ──────────────────────────────────────────── */}
       <motion.div variants={itemVariants}>

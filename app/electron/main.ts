@@ -136,6 +136,14 @@ function createDashboard() {
 }
 
 app.whenReady().then(() => {
+  // Disable disk cache to avoid permission errors in development
+  app.commandLine.appendSwitch('disable-background-networking');
+  app.commandLine.appendSwitch('disable-default-apps');
+  app.commandLine.appendSwitch('disable-extensions');
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-ipc-flooding-protection');
+  app.commandLine.appendSwitch('disable-dev-shm-usage');
+  
   agentOrchestrator = new AgentOrchestrator();
 
   createCommandBar();

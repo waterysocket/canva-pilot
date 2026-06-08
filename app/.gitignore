@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local database and vector store data
+chroma-db
+vector-store
+*.sqlite
+*.db
+test-data

@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Bot, Database, Network, 
   BookOpen, Activity, Cpu, ShoppingBag, 
-  HardDrive, Settings, Zap, ArrowLeft 
+  HardDrive, Settings, Zap, ArrowLeft,
+  Brain, Eye, PlugZap, Link2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface SidebarProps {
   activeView: string;
   setActiveView: (view: string) => void;
+}
+
+interface ConnectedModel {
+  id: string;
+  name: string;
+  provider: string;
+  type: 'reasoning' | 'vision';
 }
 
 const navItems = [
@@ -23,7 +31,73 @@ const navItems = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
+function ModelStatusIndicator({ model }: { model: ConnectedModel | null }) {
+  if (!model) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-zinc-700/50">
+        <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center">
+          <PlugZap size={10} className="text-zinc-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[9px] text-zinc-600 uppercase tracking-wider">Model</div>
+          <div className="text-[10px] text-zinc-500 font-medium truncate">Not connected</div>
+        </div>
+      </div>
+    );
+  }
+
+  const Icon = model.type === 'reasoning' ? Brain : Eye;
+  const gradient = model.type === 'reasoning' 
+    ? 'from-purple-500 to-blue-500' 
+    : 'from-cyan-500 to-emerald-500';
+  const label = model.type === 'reasoning' ? 'LLM' : 'Vision';
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/5 hover:border-purple-500/30 transition-all">
+      <div className={cn('w-5 h-5 rounded-md bg-gradient-to-br flex items-center justify-center', gradient)}>
+        <Icon size={10} className="text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[9px] text-zinc-500 uppercase tracking-wider">{label}</div>
+        <div className="text-[10px] text-zinc-300 font-medium truncate" title={model.name}>
+          {model.name}
+        </div>
+      </div>
+      <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-sm shadow-green-400/50" />
+    </div>
+  );
+}
+
 export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
+  const [configuredModels, setConfiguredModels] = useState<ConnectedModel[]>([]);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      const api = (window as any).electronAPI;
+      if (!api?.invoke) return;
+      try {
+        const models = await api.invoke('get-configured-models');
+        const mappedModels: ConnectedModel[] = Array.isArray(models) 
+          ? models.map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              provider: m.provider,
+              type: m.provider.toLowerCase().includes('ollama') ? 'vision' as const : 'reasoning' as const
+            }))
+          : [];
+        setConfiguredModels(mappedModels);
+      } catch (e) {
+        console.error('Failed to fetch configured models', e);
+      }
+    };
+
+    fetchModels();
+    const interval = setInterval(fetchModels, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const reasoningModel = configuredModels.find(m => m.type === 'reasoning') || null;
+  const visionModel = configuredModels.find(m => m.type === 'vision') || null;
   return (
     <aside className="w-[280px] border-r border-white/5 flex flex-col h-full z-10" style={{ background: 'linear-gradient(180deg, #111118 0%, #0d0d14 50%, #0a0a12 100%)' }}>
       {/* Logo / Brand */}
@@ -76,6 +150,15 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
         ))}
       </nav>
       
+      {/* Divider */}
+      <div className="mx-4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+      {/* Model Status Indicators */}
+      <div className="px-4 pb-3 space-y-2">
+        <ModelStatusIndicator model={reasoningModel} />
+        <ModelStatusIndicator model={visionModel} />
+      </div>
+
       {/* Divider */}
       <div className="mx-4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 

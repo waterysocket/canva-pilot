@@ -1,4 +1,7 @@
 import { ChromaClient, Collection } from 'chromadb';
+import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
+import path from 'path';
+import { app } from 'electron';
 
 export interface VectorStore {
   addDocuments(collectionName: string, ids: string[], documents: string[], metadatas?: any[]): Promise<void>;
@@ -12,15 +15,22 @@ export interface VectorStore {
 export class ChromaVectorStore implements VectorStore {
   private client: ChromaClient;
   private collections: Map<string, Collection> = new Map();
+  private embedder: DefaultEmbeddingFunction;
 
   constructor() {
-    // Connects to local chroma daemon. In a production desktop app, 
-    // you might manage the chroma binary lifecycle or use a different client configuration.
-    this.client = new ChromaClient({ path: "http://localhost:8000" });
+    // Use embedded mode for local database-like experience
+    // Data will be stored in the user's app data directory (automatically gitignored)
+    const dataPath = path.join(app.getPath('userData'), 'chroma-db');
+    
+    this.client = new ChromaClient({ path: dataPath });
+    this.embedder = new DefaultEmbeddingFunction();
   }
 
   async createCollection(name: string): Promise<void> {
-    const collection = await this.client.getOrCreateCollection({ name });
+    const collection = await this.client.getOrCreateCollection({ 
+      name,
+      embeddingFunction: this.embedder
+    });
     this.collections.set(name, collection);
   }
 
